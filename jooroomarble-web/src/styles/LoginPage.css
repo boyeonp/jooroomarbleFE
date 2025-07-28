@@ -1,0 +1,79 @@
+.auth-page {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('../assets/sub_image.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-title {
+  font-size: 150px;
+  font-weight: 900;
+  color: #EAB95B;
+  -webkit-text-stroke: 5px #24394C;
+  margin-top: 120px;
+  margin-bottom: 40px;
+  text-align: left;
+}
+
+.form-group input {
+  display: block;
+  width: 400px;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  font-size: 18px;
+  border: 2px solid #333;
+  border-radius: 40px;
+  outline: none;
+}
+
+.submit-button {
+  margin-top: 40px;
+  width: 200px;
+  height: 60px;
+  font-size: 24px;
+  font-weight: bold;
+  background-color: #EAB95B;
+  color: #000;
+  border: 3px solid #24394C;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: 0.3s;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  outline: none; /* 브라우저 기본 외곽선 제거 */
+
+}
+
+.submit-button:hover {
+  background-color: #f0d264;         /* 부드러운 연노랑 hover 색 */
+  transform: scale(1.03);            /* 살짝 커짐 */
+  /* 테두리 변경 없음! */
+}
+
+.link-text {
+  margin-top: 20px;
+  font-size: 15px;
+  color: #444;
+}
+
+.signup-link {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #000;
+}
+
+.input-text{
+    font-size: 30px;
+    color: #000;
+}

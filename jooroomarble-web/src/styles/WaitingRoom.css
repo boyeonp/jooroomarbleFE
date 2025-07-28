@@ -1,0 +1,93 @@
+.waiting-room {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('../assets/sub_image.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display:flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.waiting-title {
+  font-size: 150px;
+  font-weight: 900;
+  color: #87C7DB;
+  -webkit-text-stroke: 5px #24394C;
+}
+
+.content-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 60px;
+}
+
+.qr-code {
+  width: 300px;
+  height: 300px;
+  border: 3px solid #000;
+  background-color: white;
+  border-radius: 10px;
+}
+
+.participant-list {
+  text-align: left;
+  font-size: 40px;
+  color: #24394C;
+  font-weight: bold;
+}
+
+.participant-count {
+  font-size: 50px;
+  margin-bottom: 12px;
+}
+
+.start-button {
+  margin-top: 60px;
+  font-size: 24px;
+  font-weight: bold;
+  width: 240px;
+  height: 60px;
+
+  background-color: #EAB95B;
+  color: #24394C;
+  border: 3px solid #24394C;
+  border-radius: 40px;
+
+  cursor: pointer;
+  transition: 0.3s;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.start-button:hover {
+  background-color: #f0d264;
+  transform: scale(1.05);
+}
+.button-wrapper{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.participant-scroll {
+  max-height: 250px; /* 원하는 높이로 조절 가능 */
+  width: 300px;
+  overflow-y: auto;
+  padding-right: 8px; /* 스크롤바와 텍스트 간격 */
+    padding-left: 8px; /* 🔧 추가: 왼쪽 패딩 */
+}
+
+.participant-scroll ul {
+  list-style-type: disc;
+  padding-left: 20px;
+  
+}
+
+.participant-scroll li {
+  margin-bottom: 8px;
+}

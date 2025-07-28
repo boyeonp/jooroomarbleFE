@@ -1,0 +1,58 @@
+.order-page {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('../assets/sub_image.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.order-title {
+  font-size: 150px;
+  font-weight: 900;
+  color: #EAB95B;
+  -webkit-text-stroke: 5px #24394C;
+  margin-bottom: 40px;
+  align-items: center;
+}
+
+.circle {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+}
+
+.circle-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  margin: -45px;
+  background-color: white;
+  border: 2px solid #000;
+  border-radius: 50%;
+  text-align: center;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.player-number {
+  font-size: 30px;
+}
+
+.player-name {
+  font-size: 12px;
+}
