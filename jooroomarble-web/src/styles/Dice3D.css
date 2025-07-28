@@ -1,0 +1,112 @@
+.dice-container {
+  width: 100px;
+  height: 100px;
+  perspective: 800px;
+}
+
+.cube {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 1s;
+}
+
+.face {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 10px;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.dot {
+  width: 20px;
+  height: 20px;
+  background-color: #000;
+  border-radius: 50%;
+}
+
+
+/* 점 위치 정렬 */
+.face-1 { grid-template-areas: ". . ." ". a ." ". . ."; }
+.face-2 { 
+  grid-template-areas: "a . ." ". . ." ". . b"; 
+  align-content: space-between;
+  justify-content: space-between;
+}
+.face-3 { 
+  grid-template-areas: "a . ." ". b ." ". . c"; 
+  align-content: space-between;
+  justify-content: space-between;
+}
+.face-4 { 
+  grid-template-areas: "a . b" ". . ." "c . d"; 
+  align-content: space-between;
+  justify-content: space-between;
+}
+.face-5 { 
+  grid-template-areas: "a . b" ". c ." "d . e"; 
+  align-content: space-between;
+  justify-content: space-between;
+}
+.face-6 { 
+  grid-template-areas: "a . b" "c . d" "e . f"; 
+  align-content: space-between;
+  justify-content: space-between;
+}
+
+.face-1 .dot:nth-child(1) { grid-area: a; }
+.face-2 .dot:nth-child(1) { grid-area: a; }
+.face-2 .dot:nth-child(2) { grid-area: b; }
+.face-3 .dot:nth-child(1) { grid-area: a; }
+.face-3 .dot:nth-child(2) { grid-area: b; }
+.face-3 .dot:nth-child(3) { grid-area: c; }
+.face-4 .dot:nth-child(1) { grid-area: a; }
+.face-4 .dot:nth-child(2) { grid-area: b; }
+.face-4 .dot:nth-child(3) { grid-area: c; }
+.face-4 .dot:nth-child(4) { grid-area: d; }
+.face-5 .dot:nth-child(1) { grid-area: a; }
+.face-5 .dot:nth-child(2) { grid-area: b; }
+.face-5 .dot:nth-child(3) { grid-area: c; }
+.face-5 .dot:nth-child(4) { grid-area: d; }
+.face-5 .dot:nth-child(5) { grid-area: e; }
+.face-6 .dot:nth-child(1) { grid-area: a; }
+.face-6 .dot:nth-child(2) { grid-area: b; }
+.face-6 .dot:nth-child(3) { grid-area: c; }
+.face-6 .dot:nth-child(4) { grid-area: d; }
+.face-6 .dot:nth-child(5) { grid-area: e; }
+.face-6 .dot:nth-child(6) { grid-area: f; }
+
+/* 기본 면 배치 */
+.front  { transform: rotateY(0deg) translateZ(50px); }     /* 1 */
+.back   { transform: rotateY(180deg) translateZ(50px); }   /* 2 */
+.right  { transform: rotateY(90deg) translateZ(50px); }    /* 3 */
+.left   { transform: rotateY(-90deg) translateZ(50px); }   /* 4 */
+.top    { transform: rotateX(90deg) translateZ(50px); }    /* 5 */
+.bottom { transform: rotateX(-90deg) translateZ(50px); }   /* 6 */
+
+/* 올바르게 보이도록 주사위 방향 매핑 */
+.show-1 { transform: rotateX(-35deg) rotateY(-45deg); }
+.show-2 { transform: rotateX(-35deg) rotateY(-45deg) rotateX(90deg); }
+.show-3 { transform: rotateX(-35deg) rotateY(-45deg) rotateY(-90deg); }
+.show-4 { transform: rotateX(-35deg) rotateY(-45deg) rotateY(90deg); }
+.show-5 { transform: rotateX(-35deg) rotateY(-45deg) rotateX(-90deg); }
+.show-6 { transform: rotateX(-35deg) rotateY(-45deg) rotateX(180deg); }
+
+
+/* 입체 애니메이션 효과 */
+.cube.rolling {
+  animation: spin 1s ease-in-out;
+}
+
+@keyframes spin {
+  0%   { transform: rotateX(0deg) rotateY(0deg); }
+  100% { transform: rotateX(720deg) rotateY(720deg); }
+}
