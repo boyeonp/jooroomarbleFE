@@ -91,3 +91,20 @@
 .participant-scroll li {
   margin-bottom: 8px;
 }
+.join-code-box {
+  font-size: 24px;
+  font-weight: bold;
+  background-color: #fff6d6;
+  border: 2px dashed #333;
+  padding: 12px 24px;
+  border-radius: 10px;
+  width: fit-content;
+  text-align: center;
+}
+
+.join-code {
+  font-family: monospace;
+  color: #e88a13;
+  margin-left: 8px;
+  font-size: 28px;
+}

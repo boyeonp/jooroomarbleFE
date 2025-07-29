@@ -1,28 +1,46 @@
 import React, { useState } from 'react';
 import '../styles/SignupPage.css';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
 
 const SignupPage: React.FC = () => {
-    const [userId, setUserId] = useState('');
-    const [password, setPassword] = useState('');
-    const [nickname, setNickname] = useState('');
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [nickname, setNickname] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+      console.log("보내는 값:", { email, password, nickname });
 
-        console.log("회원가입 정보: ", {userId, password, nickname});
-    };
+    try {
+      const response = await axios.post('http://34.64.111.205/auth/signup', { email, password, nickname });
+
+
+      alert("회원가입 성공");   
+      navigate('/login');
+    } catch (error: any) {
+      if (error.response.status === 400) {
+        alert("이미 사용 중인 이메일입니다.");
+      } else {
+        alert("회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");
+        console.error("회원가입 오류:", error);
+      }
+    }
+  };
 
   return (
     <div className="auth-page">
       <h1 className="auth-title">회원가입</h1>
 
       <form className="form-group" onSubmit={handleSubmit}>
-        <label className="input-text">아이디</label>
+        <label className="input-text">이메일</label>
         <input
           type="text"
-          value={userId}
+          value={email}
           placeholder='아이디를 입력하세요'
-          onChange={(e) => setUserId(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
 
