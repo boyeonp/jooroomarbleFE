@@ -2,6 +2,8 @@
   width: 100px;
   height: 100px;
   perspective: 800px;
+    margin: 0 auto; /* ✅ 수평 중앙 정렬 */
+
 }
 
 .cube {

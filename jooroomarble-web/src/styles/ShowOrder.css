@@ -1,0 +1,58 @@
+.show-order-container {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('../assets/background.png'); 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+
+    /* 모바일 전용 스타일 강제 */
+  max-width: 430px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 80px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  border-color: #24394c;
+  line-height: 0.8;
+  letter-spacing: -2.0px;
+}
+
+.highlight {
+  color: #eab95b;
+}
+
+.order-title {
+  font-size: 50px;
+  margin-bottom: 10px;
+    -webkit-text-stroke: 0px;
+  color: #24394c; /* 원래 텍스트 색상 */
+}
+
+.order-item {
+  border: 2px solid #24394c;
+  border-radius: 20px;
+  padding: 24px 40px;
+  background-color: white;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+  width:60%;
+  margin-top: 80px;
+}
+
+.order-number {
+  font-size: 50px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.nickname {
+  font-size: 50px;
+  font-weight: bold;
+}

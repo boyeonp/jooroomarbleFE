@@ -7,6 +7,9 @@ import LobbyPage from './pages/LobbyPage';
 import WaitingRoomPage from './pages/WaitingRoom';
 import OrderAssignedPage from './pages/OrderAssignedPage';
 import Board from './pages/BoardPage';
+import JoinPage from './pages/JoinPage';
+import ShowOrder from './pages/ShowOrder';
+import RollDicePage from './pages/RollDicePage';
 
 function App(){
   return (
@@ -19,6 +22,9 @@ function App(){
         <Route path="/game/waitingroom" element={<WaitingRoomPage/>}/>
         <Route path="/game/orderassigned" element={<OrderAssignedPage/>}/>
         <Route path="/game/board" element={<Board/>}/>
+        <Route path="/game/join" element={<JoinPage/>}/>
+        <Route path="/game/showorder" element={<ShowOrder order={1} nickname="Player1"/>}/>
+        <Route path="/game/rolldice" element={<RollDicePage/>}/>
       </Routes>
     </Router>
   )
