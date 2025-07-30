@@ -6,7 +6,7 @@
   background-position: center;
   background-repeat: no-repeat;
 
-  display:flex;
+  display: flex;
   flex-direction: column;
   text-align: center;
 }
@@ -21,8 +21,8 @@
 .content-wrapper {
   display: flex;
   justify-content: center;
-  align-items: center;
   gap: 60px;
+  height: 300px;
 }
 
 .qr-code {
@@ -69,42 +69,54 @@
   background-color: #f0d264;
   transform: scale(1.05);
 }
-.button-wrapper{
+
+.button-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .participant-scroll {
-  max-height: 250px; /* 원하는 높이로 조절 가능 */
+  max-height: 250px;
+  /* 원하는 높이로 조절 가능 */
   width: 300px;
   overflow-y: auto;
-  padding-right: 8px; /* 스크롤바와 텍스트 간격 */
-    padding-left: 8px; /* 🔧 추가: 왼쪽 패딩 */
+  padding-right: 8px;
+  /* 스크롤바와 텍스트 간격 */
+  padding-left: 8px;
+  /* 🔧 추가: 왼쪽 패딩 */
 }
 
 .participant-scroll ul {
   list-style-type: disc;
   padding-left: 20px;
-  
+
 }
 
 .participant-scroll li {
   margin-bottom: 8px;
 }
+
 .join-code-box {
-  font-size: 24px;
+  font-size: 40px;
   font-weight: bold;
   background-color: #fff6d6;
   border: 2px dashed #333;
   padding: 12px 24px;
   border-radius: 10px;
-  width: fit-content;
   text-align: center;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  /* ✅ 중앙 정렬을 위해 flex 추가 */
+
 }
 
 .join-code {
   font-family: monospace;
   color: #e88a13;
   margin-left: 8px;
-  font-size: 28px;
+  font-size: 50px;
 }

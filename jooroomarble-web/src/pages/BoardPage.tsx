@@ -1,4 +1,4 @@
-// ✅ 수정된 BoardPage.tsx (로딩 화면 추가 + 주사위 → 말 이동 → 칸 내용 팝업 순서 적용)
+// ✅ 수정된 BoardPage.tsx (Dice3D onRollEnd 기반으로 팝업 순서 조정)
 import React, { useEffect, useState } from 'react';
 import Tile from '../components/Tile';
 import CenterTile from '../components/CenterTile';
@@ -33,11 +33,12 @@ const BoardPage: React.FC = () => {
 
   const [diceValue, setDiceValue] = useState(1);
   const [rolling, setRolling] = useState(false);
-  const [dicePopup, setDicePopup] = useState(false);
+  const [showDicePopup, setShowDicePopup] = useState(false);
   const [players, setPlayers] = useState<Player[]>([{ id: 1, position: 0 }]);
   const [activePopup, setActivePopup] = useState<{ tile: TileInfo } | null>(null);
   const [tileData, setTileData] = useState<TileInfo[]>([]);
-  const [loading, setLoading] = useState(true); // ✅ 로딩 상태 추가
+  const [loading, setLoading] = useState(true);
+  const [bombCount, setBombCount] = useState(0);
 
   const fetchInitialTiles = async () => {
     try {
@@ -85,24 +86,54 @@ const BoardPage: React.FC = () => {
 
     socket.on('turn_changed', (data: any) => {
       const { dice, toPos, tile } = data;
-
       setRolling(true);
       setDiceValue(dice);
-      setDicePopup(true);
 
-      setTimeout(() => {
-        setDicePopup(false);
-        setPlayers([{ id: 1, position: toPos }]);
+      const handleRollEnd = () => {
+        setRolling(false);
+        setShowDicePopup(true);
 
         setTimeout(() => {
-          setRolling(false);
-          setTileData(prev => (prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]));
+          setShowDicePopup(false);
+          setPlayers([{ id: 1, position: toPos }]);
 
           setTimeout(() => {
-            setActivePopup({ tile });
-          }, 1200);
-        }, 1500);
-      }, 1500);
+            setTileData(prev =>
+              prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]
+            );
+
+            if (tile.defaultAction?.type === 'bomb') {
+              setBombCount(prev => {
+                const updated = prev + 0.5;
+                console.log(`폭탄 칸 도착! 현재 적립된 잔 수: ${updated}`);
+                return updated;
+              });
+            }
+
+            if (tile.idx === 0) {
+              const currentCount = bombCount;
+              setActivePopup({
+                tile: {
+                  ...tile,
+                  description: 'START 적립 알림',
+                  defaultAction: {
+                    type: 'popup',
+                    message: `${currentCount}잔이 적립되어 있습니다!`,
+                  },
+                },
+              });
+              setBombCount(0);
+            } else {
+              setTimeout(() => {
+                setActivePopup({ tile });
+              }, 1200);
+            }
+          }, 1500);
+        }, 3000);
+      };
+
+      // rolling이 true인 상태에서 Dice3D의 onRollEnd로 위 함수 전달
+      setTimeout(handleRollEnd, 1500); // fallback 대기 시간
     });
 
     return () => {
@@ -111,7 +142,7 @@ const BoardPage: React.FC = () => {
     };
   }, []);
 
-  const closeDicePopup = () => setDicePopup(false);
+  const closeDicePopup = () => setShowDicePopup(false);
   const handleClosePopup = () => setActivePopup(null);
 
   const handleGameEnd = async () => {
@@ -143,13 +174,18 @@ const BoardPage: React.FC = () => {
               .map(tile => (
                 <Tile key={tile.idx} className={`tile tile-${tile.idx}`} text={tile.description}>
                   {players.filter(p => p.position === tile.idx).map(p => (<Piece key={p.id} />))}
+                  {tile.idx === 0 && (
+                    <div className="start-bomb-count">
+                      🍺 {bombCount}잔 적립
+                    </div>
+                  )}
                 </Tile>
               ))}
 
             <div className="center-tile-area">
               <CenterTile />
               <div className="dice-container-wrapper">
-                <Dice3D number={diceValue} rolling={rolling} />
+                <Dice3D number={diceValue} rolling={rolling} onRollEnd={() => {}} />
               </div>
               <div className='announce'>순서에 따라 휴대폰에서 주사위를 돌려주세요.</div>
 
@@ -162,7 +198,7 @@ const BoardPage: React.FC = () => {
             </div>
           </div>
 
-          {dicePopup && (
+          {showDicePopup && (
             <Popup
               title={`🎲 주사위 결과: ${diceValue}`}
               description={`${diceValue} 칸 이동!`}

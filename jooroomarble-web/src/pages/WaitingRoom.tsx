@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/WaitingRoom.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { io, Socket } from 'socket.io-client';
+import { socket } from '../socket/socket';
 
 interface Guest {
     id: number;
@@ -10,7 +10,6 @@ interface Guest {
     guestId?: string;
 }
 
-let socket: Socket;
 
 const WaitingRoomPage: React.FC = () => {
     const { code } = useParams();
@@ -36,10 +35,8 @@ const WaitingRoomPage: React.FC = () => {
             return;
         }
 
-        // ✅ WebSocket 연결
-        const socket = io('http://34.64.111.205/ws/session', {
-            transports: ['websocket'],
-        });
+        if (!socket.connected) socket.connect();
+
 
         socket.emit('join_room', { code });
 
@@ -141,7 +138,7 @@ const WaitingRoomPage: React.FC = () => {
 
             <div className="content-wrapper">
                 <div className="join-code-box">
-                    참여코드: <span className="join-code">{code}</span>
+                    참여코드 <span className="join-code">{code}</span>
                 </div>
                 <div className="participant-list">
                     <div className="participant-count">참여자 ({participants.length}명)</div>

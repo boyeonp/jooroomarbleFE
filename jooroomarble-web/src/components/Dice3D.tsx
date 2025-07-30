@@ -1,29 +1,37 @@
-import React, { useEffect, useRef} from 'react';
-import '../styles/Dice3D.css';  
+import React, { useEffect, useRef } from 'react';
+import '../styles/Dice3D.css';
 
 interface Dice3DProps {
     number: number;    // 1~6
     rolling: boolean;  // true면 주사위 굴러가는 애니메이션
+    onRollEnd?: () => void;     // ✅ 주사위 굴림 완료 시 실행할 콜백
+
 }
 
-const Dice3D: React.FC<Dice3DProps> = ({ number, rolling }) => {
+const Dice3D: React.FC<Dice3DProps> = ({ number, rolling, onRollEnd}) => {
     const cubeRef = useRef<HTMLDivElement>(null);
+
 
     useEffect(() => {
         if (cubeRef.current) {
             const cube = cubeRef.current;
-            cube.className= `cube`; // 기존 클래스 초기화
+            cube.className = `cube`; // 기존 클래스 초기화
             cube.classList.add(`show-${number}`); // 현재 숫자에 해당하는 클래스 추가
 
             if (rolling) {
                 cube.classList.remove('rolling');
                 void cube.offsetWidth; // reflow
                 cube.classList.add('rolling'); // 애니메이션 시작
-            }
-            console.log(`주사위 숫자 업데이트: ${number}, 굴림 상태: ${rolling}`);
 
+                // ✅ 애니메이션 끝난 후 콜백 실행 (1.5초 후)
+                const timeout = setTimeout(() => {
+                    if (onRollEnd) onRollEnd();
+                }, 1500);
+
+                return () => clearTimeout(timeout);
+            }
         }
-    }, [number, rolling]);
+    }, [number, rolling, onRollEnd]);
 
 
     return (

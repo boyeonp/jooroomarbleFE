@@ -11,6 +11,18 @@ const JoinPage: React.FC = () => {
   const [showWarning, setShowWarning] = useState(false);
   const navigate = useNavigate();
 
+  // 닉네임 중복 체크 함수
+  const checkNicknameDuplicate = async (sessionCode: string, nickname: string) => {
+    try {
+      const res = await axios.get(`http://34.64.111.205/sessions/${sessionCode}`);
+      const participants = res.data?.participants || [];
+      console.log('참가자 목록:', participants);
+      return participants.some((p: any) => p.nickname === nickname);
+    } catch (err) {
+      console.error('닉네임 중복 확인 실패:', err);
+      return false;
+    }
+  }
 
   // ✅ WebSocket 연결 및 game_start 수신
   useEffect(() => {
@@ -110,6 +122,14 @@ const JoinPage: React.FC = () => {
       return;
     }
 
+    // 닉네임 중복 체크
+    const isDuplicate = await checkNicknameDuplicate(code, nickname);
+    console.log('닉네임중복체크:', isDuplicate);
+    if (isDuplicate) {
+      alert('이미 사용 중인 닉네임입니다. 다른 이름을 입력해주세요.');
+      return;
+    }
+
     try {
       const response = await axios.post(`http://34.64.111.205/sessions/${code}/join`, {
         nickname,
@@ -128,7 +148,11 @@ const JoinPage: React.FC = () => {
       setShowWarning(true);
     } catch (error: any) {
       console.error('참여 실패:', error);
-      alert('참여에 실패했습니다. 코드를 확인해주세요.');
+      if (error.response?.status === 403) {
+        alert('이미 인원이 가득 찼습니다. 다른 방을 이용해주세요.');
+      } else {
+        alert('참여에 실패했습니다. 코드를 확인해주세요.');
+      }
     }
   };
 
@@ -142,7 +166,7 @@ const JoinPage: React.FC = () => {
         <span className="blue">몰캠 주루마블</span>에
         <br />
         참여를 원하시면, <br />
-        <span className="yellow">참여코드와 이름</span>을 입력하세요.
+        <span className="yellow">참여코드와 이름</span>을 <br/> 입력하세요.
       </p>
       <input
         className="name-input"
