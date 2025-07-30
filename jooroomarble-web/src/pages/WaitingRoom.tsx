@@ -2,23 +2,17 @@ import React, { useEffect, useState } from 'react';
 import '../styles/WaitingRoom.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 
 interface Guest {
     id: number;
     nickname: string;
-}
-
-interface JwtPayload {
-    id: number;
-    email: string;
+    guestId?: string; // 추가 (혹시나 백엔드에서 없는 경우 대비)
 }
 
 const WaitingRoomPage: React.FC = () => {
     const { code } = useParams();
     const navigate = useNavigate();
     const [participants, setParticipants] = useState<Guest[]>([]);
-    const [isHost, setIsHost] = useState(false);
 
     useEffect(() => {
         if (!code) {
@@ -26,26 +20,44 @@ const WaitingRoomPage: React.FC = () => {
             navigate('/lobby');
             return;
         }
+
         const fetchSession = async () => {
             try {
                 const token = localStorage.getItem('accessToken');
+                const guestId = localStorage.getItem('guestId');
+
                 if (!token) {
+                    alert("로그인이 필요합니다.");
+                    navigate('/login');
                     return;
                 }
 
-                const decoded = jwtDecode(token!);
-
-                const res = await axios.get(`http://34.64.111.205/sessions/${code}`,{
+                const res = await axios.get(`http://34.64.111.205/sessions/${code}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
 
-                console.log("세션 정보", res.data);
-                setParticipants(res.data.guests || []);
+                const data = res.data;
+                setParticipants(data.participants || []);
 
-                if (res.data.hostId && decoded.id) {
-                    setIsHost(res.data.hostId === decoded.id);
+                console.log("🟡 세션 상태:", data.status);
+                console.log("🟡 내 guestId:", guestId);
+                console.log("🟡 참여자 목록:", data.participants);
+
+                // 게스트일 경우 게임 시작 시 자동 이동
+                if (data.status === "RUN" && guestId) {
+                    const myInfo = data.participants.find((p: any) => String(p.guestId) === guestId);
+                    console.log("🟢 내 정보:", myInfo);
+                    if (myInfo) {
+                        console.log("✅ 게임 시작 감지됨 → ShowOrder로 이동");
+                        navigate('/game/showorder', {
+                            state: {
+                                order: myInfo.joinOrder + 1,
+                                nickname: myInfo.nickname,
+                            },
+                        });
+                    }
                 }
             } catch (error) {
                 console.error("세션 정보 불러오기 오류:", error);
@@ -53,10 +65,9 @@ const WaitingRoomPage: React.FC = () => {
         };
 
         fetchSession();
-        const interval = setInterval(fetchSession, 3000); // 5초마다 대기실 정보 갱신
+        const interval = setInterval(fetchSession, 1000); // 3초마다 대기실 정보 갱신
         return () => clearInterval(interval);
     }, [code, navigate]);
-
 
     // 게임 시작 요청
     const handleStartGame = async () => {
@@ -79,8 +90,8 @@ const WaitingRoomPage: React.FC = () => {
             );
 
             console.log("게임 시작 응답: ", res.data);
-            navigate('/game/orderassigned');
-        } catch(error: any){
+            navigate(`/game/orderassigned/${code}`);
+        } catch (error: any) {
             console.error("게임 시작 오류:", error);
             if (error.response?.status === 403) {
                 alert("방장만 게임을 시작할 수 있습니다.");
@@ -96,7 +107,6 @@ const WaitingRoomPage: React.FC = () => {
     return (
         <div className="waiting-room">
             <h1 className="waiting-title">대기실</h1>
-
 
             <div className="content-wrapper">
                 <div className="join-code-box">

@@ -1,151 +1,162 @@
-import React, { useState } from 'react';
+// ✅ 수정된 BoardPage.tsx (사다리 포함 + 아래쪽 사다리 타일 제거)
+import React, { useEffect, useState } from 'react';
 import Tile from '../components/Tile';
 import CenterTile from '../components/CenterTile';
 import Popup from '../components/Popup';
 import Piece from '../components/Piece';
-import '../styles/BoardPage.css';
 import Dice3D from '../components/Dice3D';
+import '../styles/BoardPage.css';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const tileData = [
-  { id: 0, text: '금픽 마셔', detail: '4주 동안 금픽에 한 번이라도 선정된 사람은 마십니다.', special: 'gold' },
-  { id: 1, text: '랜덤 게임', detail: '즉석에서 랜덤 게임을 하나 진행하세요.' },
-  { id: 2, text: 'mac 안 쓰는 사람 마셔', detail: '맥북을 사용하지 않는 사람은 마십니다.' },
-  { id: 3, text: '02년생 마셔', detail: '2002년생 이하인 사람만 마십니다.' },
-  { id: 4, text: '물 / 술 시작 !!', detail: '중앙 경로로 들어갑니다. 술/물 선택해서 진입!' },
-  { id: 5, text: '4분반 외모순위 1~5위 마셔', detail: '자기 기준 외모 Top 5면 마십니다.' },
-  { id: 6, text: '스크럼 지각한 사람 마셔', detail: '스크럼 회의에 지각한 사람은 마십니다.' },
-  { id: 7, text: '훈민정음 (1바퀴동안)', detail: '모든 대화를 훈민정음처럼 해야 함!' },
-  { id: 8, text: '눈치 게임', detail: '눈치 게임을 한 판 진행합니다.' },
-  { id: 9, text: '다같이 짠 !!', detail: '모두가 함께 짠 후 마십니다.', special: 'gold' },
-  { id: 10, text: '엠준위 빼고 마셔', detail: '엠준위만 제외하고 전원 마십니다.' },
-  { id: 11, text: '이미지 게임', detail: '이미지 게임을 한 판 진행합니다.' },
-  { id: 12, text: '타대생 마셔', detail: '타 학교 학생은 마십니다.' },
-  { id: 13, text: '걸린사람 팀메이트 마셔', detail: '게임에 걸린 사람과 같은 팀도 마십니다.' },
-  { id: 14, text: '나빼고 다 마셔', detail: '본인을 제외한 모두가 마십니다.' },
-  { id: 15, text: '랜덤 게임', detail: '즉석에서 랜덤 게임을 하나 진행하세요.', special: 'gold' },
-  { id: 16, text: '좌3우3 마시기', detail: '왼쪽, 오른쪽 3명씩 마십니다.' },
-  { id: 17, text: '카이스트 마셔', detail: '카이스트 출신은 마십니다.' },
-  { id: 18, text: '손병호 게임', detail: '손병호 게임을 진행하세요.' },
-  { id: 19, text: '시작 (적립 칸)', detail: '게임 시작 위치입니다.', special: 'pink' },
-  { id: 20, text: '너 마셔', detail: '지목해서 한 명 마시게 하기' },
-  { id: 21, text: '학과 이름에 "컴퓨터" 있는 사람 마셔', detail: '컴퓨터가 들어간 학과명이면 마십니다.' },
-  { id: 22, text: 'mbti I 마셔', detail: '내향형 사람은 마십니다.' },
-  { id: 23, text: '공산당', detail: '공산당처럼 행동해보세요(?)' },
-  // Diagonal path tiles
-  { id: 24, text: '술', detail: '술을 마시세요.' },
-  { id: 25, text: '물', detail: '물을 마시세요.' },
-  { id: 26, text: '술', detail: '술을 마시세요.' },
-  { id: 27, text: '물', detail: '물을 마시세요.' },
-  { id: 28, text: '술', detail: '술을 마시세요.' },
-];
+interface Player {
+  id: number;
+  position: number;
+}
 
-const diagonalPathIds = [24, 25, 26, 27, 28];
-
-
+interface TileInfo {
+  idx: number;
+  description: string;
+  defaultAction: { type: string; message?: string };
+}
 
 const BoardPage: React.FC = () => {
+  const { code } = useParams();
+  const navigate = useNavigate();
+
   const [diceValue, setDiceValue] = useState(1);
   const [rolling, setRolling] = useState(false);
   const [dicePopup, setDicePopup] = useState(false);
-  const [players, setPlayers] = useState([
-    { id: 1, position: 19 }, // Start at '시작' tile (ID 19)
-  ]);
-  const [activePopup, setActivePopup] = useState<{ tileId: number } | null>(null);
+  const [players, setPlayers] = useState<Player[]>([{ id: 1, position: 0 }]);
+  const [activePopup, setActivePopup] = useState<{ tile: TileInfo } | null>(null);
+  const [tileData, setTileData] = useState<TileInfo[]>([]);
 
-  const handleDiceRoll = () => {
-    if (rolling) return;
+  const fetchInitialTiles = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const guestId = localStorage.getItem('guestId');
+      if (!token && !guestId || !code) return;
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      const res = await axios.get(`http://34.64.111.205/sessions/${code}/board`, { headers });
+      const mapTiles = res.data?.map?.tiles || [];
+      setTileData(mapTiles);
+    } catch (e) {
+      console.error('초기 보드 데이터 로딩 실패:', e);
+    }
+  };
 
-    const roll = Math.floor(Math.random() * 6) + 1;
-    console.log(`주사위 굴림: ${roll}`);
+  const fetchGameState = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const guestId = localStorage.getItem('guestId');
+      if ((!token && !guestId) || !code) return;
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      const res = await axios.get(`http://34.64.111.205/sessions/${code}/status`, { headers });
+      const myPlayer = res.data.participants.find((p: any) => p.guestId === guestId);
+      if (myPlayer) setPlayers([{ id: 1, position: res.data.currentPos }]);
+      const tile = res.data.currentTile;
+      setTileData(prev => (prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]));
+    } catch (e) {
+      console.error('게임 상태 가져오기 오류:', e);
+    }
+  };
 
-    // 1. 스핀 애니메이션 시작
-    setRolling(true);
+  useEffect(() => {
+    fetchInitialTiles();
+    fetchGameState();
+  }, []);
 
-    // 2. 스핀 애니메이션(1초)이 끝난 후
-    setTimeout(() => {
-      setRolling(false); // 스핀 애니메이션 중지
-      setDiceValue(roll); // 최종 숫자 설정 -> 1초 트랜지션 시작
-
-      // 3. 최종 위치로 가는 트랜지션(1초)이 끝난 후
+  const handleDiceRoll = async () => {
+    if (rolling || !code) return;
+    const guestId = localStorage.getItem('guestId');
+    try {
+      setRolling(true);
+      const res = await axios.post(`http://34.64.111.205/sessions/${code}/turn`, { guestId }, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const { dice, toPos, tile } = res.data;
+      setDiceValue(dice);
       setTimeout(() => {
-        setDicePopup(true); // 결과 팝업 표시
-
-        setPlayers(prevPlayers => {
-          const currentPlayer = prevPlayers[0];
-          const newPosition = (currentPlayer.position - roll + tileData.length) % tileData.length;
-          return [{ ...currentPlayer, position: newPosition }];
-        });
-      }, 1000); // CSS transition 시간과 일치
-    }, 1000); // CSS spin animation 시간과 일치
+        setPlayers([{ id: 1, position: toPos }]);
+        setRolling(false);
+        setDicePopup(true);
+        setTileData(prev => (prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]));
+        setActivePopup({ tile });
+      }, 1000);
+    } catch (e: any) {
+      console.error('주사위 굴리기 오류:', e);
+      alert(e.response?.data?.message || '주사위 굴리기 중 오류가 발생했습니다.');
+      setRolling(false);
+    }
   };
 
-  const closeDicePopup = () => {
-    setDicePopup(false);
-    // 주사위 팝업이 닫히면 현재 위치의 타일 팝업을 표시
-    const currentPlayer = players[0];
-    setActivePopup({ tileId: currentPlayer.position });
-  };
+  const closeDicePopup = () => setDicePopup(false);
+  const handleClosePopup = () => setActivePopup(null);
 
-  const handleClosePopup = () => {
-    setActivePopup(null);
-  };
+  const handleGameEnd = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const guestId = localStorage.getItem('guestId');
+      if (!code || (!token && !guestId)) return;
 
-  const getTileById = (id: number) => tileData.find(tile => tile.id === id);
+
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
+      await axios.delete(`http://34.64.111.205/sessions/${code}`, { headers });
+
+      alert('게임이 종료되었습니다.');
+      navigate('/lobby');
+    } catch (e: any) {
+      console.error('게임 종료 실패:', e);
+      alert('게임 종료 중 오류가 발생했습니다.');
+    }
+  };
 
   return (
     <div className="board-page-container">
-      <button className="game-exit-button">게임 종료</button>
+      <button className="game-exit-button" onClick={handleGameEnd}>게임 종료</button>
       <div className="board-container">
-        {tileData.filter(tile => !diagonalPathIds.includes(tile.id)).map(tile => (
-          <Tile
-            key={tile.id}
-            className={`tile-${tile.id} ${tile.special || ''}`}
-            text={tile.text}
-          >
-            {players
-              .filter(p => p.position === tile.id)
-              .map(p => (
-                <Piece key={p.id} />
-              ))}
-          </Tile>
-        ))}
+        {tileData
+          .filter(tile => tile.idx < 24 || tile.idx > 28) // ✅ idx 24~28 사다리 타일은 제외하고 렌더링
+          .map(tile => (
+            <Tile key={tile.idx} className={`tile tile-${tile.idx}`} text={tile.description}>
+              {players.filter(p => p.position === tile.idx).map(p => (<Piece key={p.id} />))}
+            </Tile>
+          ))}
+
+        {/* 중앙 영역 */}
         <div className="center-tile-area">
           <CenterTile />
           <div className="dice-container-wrapper">
             <Dice3D number={diceValue} rolling={rolling} />
           </div>
-          <button className="dice-button" onClick={handleDiceRoll}>
-            주사위 던지기
-          </button>
+          <button className="dice-button" onClick={handleDiceRoll}>주사위 던지기</button>
 
-
-          {/* ✅ 주사위 결과 팝업 */}
-          {dicePopup && (
-            <Popup
-              title={`🎲 주사위 결과: ${diceValue}`}
-              description={`${diceValue} 칸 이동하세요!`}
-              onClose={closeDicePopup}
-            />
-          )}
-
-          {diagonalPathIds.map((id, index) => {
-            const tile = getTileById(id);
-            if (!tile) return null;
-            return (
-              <div
-                key={tile.id}
-                className={`diagonal-tile diagonal-tile-${index}`}
-              >
-                <span className='text'>{tile.text}</span>
-              </div>
-            );
-          })}
+          {/* 사다리 타일 추가 */}
+          <div className="diagonal-tile diagonal-tile-0"><div className="text">술</div></div>
+          <div className="diagonal-tile diagonal-tile-1"><div className="text">물</div></div>
+          <div className="diagonal-tile diagonal-tile-2"><div className="text">술</div></div>
+          <div className="diagonal-tile diagonal-tile-3"><div className="text">물</div></div>
+          <div className="diagonal-tile diagonal-tile-4"><div className="text">술</div></div>
         </div>
       </div>
+
+      {dicePopup && (
+        <Popup
+          title={`🎲 주사위 결과: ${diceValue}`}
+          description={`${diceValue} 칸 이동!`}
+          onClose={closeDicePopup}
+        />
+      )}
+
       {activePopup && (
         <Popup
-          title={getTileById(activePopup.tileId)?.text || ''}
-          description={getTileById(activePopup.tileId)?.detail || ''}
+          title={activePopup.tile.description}
+          description={
+            activePopup.tile.defaultAction?.type === 'popup'
+              ? activePopup.tile.defaultAction.message || '특수 행동 없음'
+              : activePopup.tile.defaultAction?.type || '일반 칸입니다'
+          }
           onClose={handleClosePopup}
         />
       )}

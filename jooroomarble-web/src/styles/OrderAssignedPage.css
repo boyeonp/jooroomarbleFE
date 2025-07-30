@@ -56,3 +56,23 @@
 .player-name {
   font-size: 12px;
 }
+.button-wrapper {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.start-button {
+  background-color: #eab95b;
+  color: #24394C;
+  font-size: 24px;
+  padding: 12px 30px;
+  border: 3px solid #24394C;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.start-button:hover {
+  background-color: #dba34b;
+}

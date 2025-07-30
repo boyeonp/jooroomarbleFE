@@ -15,7 +15,7 @@ const ShowOrder: React.FC<ShowOrderProps> = ({ order, nickname }) => {
             </h1>
             <p className="order-title">순서 배정 완료!</p>
             <div className="order-item">
-                <span className="order-number">{order}</span><br/>
+                <span className="order-number">{order}</span><br />
                 <span className="nickname">{nickname}</span>
             </div>
         </div>
