@@ -23,12 +23,13 @@ body, html, #root {
   top: 40px;      /* Adjusted position */
   right: 50px;     /* Adjusted position */
   padding: 10px 20px;
-  font-size: 16px;
+  width: 150px;
+  font-size: 25px;
   font-weight: bold;
   color: #333;
   background-color: #fff;
   border: 2px solid #333;
-  border-radius: 20px;
+  border-radius: 30px;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
   z-index: 10;
@@ -61,52 +62,61 @@ body, html, #root {
   text-align: center;
   font-size: 25px;
   font-weight: bold;
-  background-color: #fff;
   padding: 5px;
   box-sizing: border-box;
   position: relative;
   line-height: 1.2;
+    /* ✅ 글자 줄바꿈 허용 */
+  word-break: keep-all;      /* 단어 단위로 끊기 */
+  white-space: normal;       /* 줄바꿈 가능하게 */
+  overflow-wrap: break-word; /* 너무 긴 단어는 강제 줄바꿈 */
 }
 
-/* Special Tile Colors */
-.tile.gold {
-  background-color: #fde047; /* gold */
-}
-.tile.pink {
-  background-color: #fecdd3; /* pink */
-}
 
 /* Individual Tile Positioning for 8x6 Grid */
-.tile-0 { grid-area: 1 / 1; }
-.tile-1 { grid-area: 1 / 2; }
-.tile-2 { grid-area: 1 / 3; }
-.tile-3 { grid-area: 1 / 4; }
-.tile-4 { grid-area: 1 / 5; }
-.tile-5 { grid-area: 1 / 6; }
-.tile-6 { grid-area: 1 / 7; }
-.tile-7 { grid-area: 1 / 8; }
-.tile-8 { grid-area: 2 / 8; }
-.tile-9 { grid-area: 3 / 8; }
-.tile-10 { grid-area: 4 / 8; }
-.tile-11 { grid-area: 5 / 8; }
-.tile-12 { grid-area: 6 / 8; }
-.tile-13 { grid-area: 6 / 7; }
-.tile-14 { grid-area: 6 / 6; }
-.tile-15 { grid-area: 6 / 5; }
-.tile-16 { grid-area: 6 / 4; }
-.tile-17 { grid-area: 6 / 3; }
-.tile-18 { grid-area: 6 / 2; }
-.tile-19 { grid-area: 6 / 1; }
-.tile-20 { grid-area: 5 / 1; }
-.tile-21 { grid-area: 4 / 1; }
-.tile-22 { grid-area: 3 / 1; }
-.tile-23 { grid-area: 2 / 1; }
+/* 아래쪽 줄: 좌 → 우 */
+.tile-0 { 
+  grid-area: 6 / 1; 
+  background-color: #fecdd3;
+  font-size: 35px;
+}
+.tile-1 { grid-area: 6 / 2; }
+.tile-2 { grid-area: 6 / 3; background-color: #EAB95B;}
+.tile-3 { grid-area: 6 / 4;   background-color: #fff;}
+.tile-4 { grid-area: 6 / 5;  background-color: #EAB95B;}
+.tile-5 { grid-area: 6 / 6; }
+.tile-6 { grid-area: 6 / 7;   background-color: #fff; }
+
+/* 오른쪽 줄: 아래 → 위 */
+.tile-7  { grid-area: 6 / 8;  background-color: #EAB95B;}
+.tile-8  { grid-area: 5 / 8; }
+.tile-9  { grid-area: 4 / 8; background-color: #EAB95B; }
+.tile-10 { grid-area: 3 / 8;   background-color: #fff; }
+.tile-11 { grid-area: 2 / 8; }
+.tile-12 { grid-area: 1 / 8; background-color: #EAB95B;}
+.tile-13 { grid-area: 1 / 7;   background-color: #fff; }
+
+/* 위쪽 줄: 우 → 좌 */
+.tile-14 { grid-area: 1 / 6; }
+.tile-15 { grid-area: 1 / 5; background-color: #EAB95B; }
+.tile-16 { grid-area: 1 / 4;   background-color: #fff; }
+.tile-17 { grid-area: 1 / 3; }
+.tile-18 { grid-area: 1 / 2;   background-color: #fff;}
+.tile-19 { grid-area: 1 / 1; background-color: #EAB95B; }
+
+/* 왼쪽 줄: 위 → 아래 */
+.tile-20 { grid-area: 2 / 1;   background-color: #fff; }
+.tile-21 { grid-area: 3 / 1; }
+.tile-22 { grid-area: 4 / 1; background-color: #EAB95B; }
+.tile-23 { grid-area: 5 / 1;    background-color: #fff;}
+
+/* 시작 칸: 왼쪽 아래 */
+.tile-28 { grid-area: 6 / 0; }
 
 /* Center Tile Area */
 .center-tile-area {
   grid-column: 2 / 8; /* Spans from col 2 to 7 */
   grid-row: 2 / 6;    /* Spans from row 2 to 5 */
-  background-color: #fdf6ed; /* Match board background */
   display: flex;
   justify-content: flex-start;
   align-items: flex-start; /* Align items to the left */
@@ -129,23 +139,8 @@ body, html, #root {
   font-weight: 900;
   -webkit-text-stroke: 3px #000;
   line-height: 1.1;
-}
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
 
-.dice-button {
-  padding: 15px 30px; /* Increased size */
-  font-size: 22px;    /* Increased size */
-  font-weight: bold;
-  color: #333;
-  background-color: #fcd34d;
-  border: 3px solid #000;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-left: 60px; /* Spacing from the title */
-}
-
-.dice-button:hover {
-  background-color: #fca5a5;
 }
 
 /* Container for pieces on a tile */
@@ -159,8 +154,8 @@ body, html, #root {
 
 /* Piece on Tile */
 .piece {
-  width: 40px;  /* Adjust size as needed */
-  height: 40px; /* Adjust size as needed */
+  width: 60px;  /* Adjust size as needed */
+  height: 60px; /* Adjust size as needed */
   object-fit: contain; /* Ensure the image scales correctly */
 }
 
@@ -170,7 +165,6 @@ body, html, #root {
   width: 135px;
   height: 110px;
   border: 2px solid #000;
-  background-color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -186,16 +180,16 @@ body, html, #root {
 .diagonal-tile > .text {
   transform: skewX(-12deg); /* 보정 */
   font-weight: bold;
-  font-size: 24px;
+  font-size: 35px;
   text-align: center;
 }
 
 /* Path connecting tile 4 to tile 14 */
-.diagonal-tile-0 { top: 0px; left: 390px; }
-.diagonal-tile-1 { top: 117px; left: 420px; }
+.diagonal-tile-0 { top: -1px; left: 395px; }
+.diagonal-tile-1 { top: 116px; left: 422px;  background-color: #EAB95B; }
 .diagonal-tile-2 { top: 233px; left: 450px; }
-.diagonal-tile-3 { top: 349px; left: 480px; }
-.diagonal-tile-4 { top: 465px; left: 510px; }
+.diagonal-tile-3 { top: 349px; left: 477px;   background-color: #EAB95B;}
+.diagonal-tile-4 { top: 465px; left: 505px; }
 
 
 /* Popup Styles */
@@ -259,6 +253,7 @@ body, html, #root {
   width: 100px;
   height: 100px;
   perspective: 800px;
+  margin-left: 130px;
 }
 
 .cube {
@@ -306,4 +301,9 @@ body, html, #root {
 @keyframes spin {
   0% { transform: rotateX(0deg) rotateY(0deg); }
   100% { transform: rotateX(720deg) rotateY(720deg); }
+}
+.announce{
+  font-size: 25px;
+  margin-top: 50px;
+  color: red;
 }

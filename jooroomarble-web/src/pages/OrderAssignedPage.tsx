@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '../styles/OrderAssignedPage.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { socket } from '../socket/socket'; // ✅ 공통 소켓 import
 
 interface Participant {
     participantId: number;
@@ -14,6 +15,33 @@ const OrderAssignedPage: React.FC = () => {
     const navigate = useNavigate();
     const [orderedParticipants, setOrderedParticipants] = useState<Participant[]>([]);
 
+    // ✅ WebSocket 연결 및 game_begin 이벤트 수신
+    useEffect(() => {
+        if (!code) return;
+
+        if (!socket.connected) {
+            socket.connect(); // ✅ 수동 연결
+        }
+
+        socket.emit('join_room', { code }); // ✅ join_room은 반드시 호출해야 이벤트 수신 가능
+        console.log('🧩 join_room 완료:', code);
+
+        socket.on('connect', () => {
+            console.log('✅ WebSocket 연결됨:', socket.id);
+        });
+
+        socket.on('game_begin', () => {
+            console.log('🚀 game_begin 이벤트 수신됨! -> 보드로 이동');
+            navigate(`/game/board/${code}`);
+        });
+
+        return () => {
+            socket.emit('leave_room', { code });
+            socket.off('game_begin');
+            socket.off('connect');
+        };
+    }, [code, navigate]);
+    
     useEffect(() => {
         const fetchOrderedParticipants = async () => {
             if (!code) {
@@ -44,6 +72,7 @@ const OrderAssignedPage: React.FC = () => {
         fetchOrderedParticipants();
     }, [code]);
 
+    // 방장: 보드 시작 
     const handleGoToBoard = async () => {
         const token = localStorage.getItem('accessToken');
         if (!token || !code) {
@@ -88,7 +117,7 @@ const OrderAssignedPage: React.FC = () => {
                     </div>
                 ))}
             </div>
-            
+
             {/* ✅ 추가된 버튼 */}
             <div className="button-wrapper">
                 <button className="start-button" onClick={handleGoToBoard}>보드판으로 이동</button>

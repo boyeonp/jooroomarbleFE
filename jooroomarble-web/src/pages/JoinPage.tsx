@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import '../styles/JoinPage.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { socket } from '../socket/socket'; // ✅ 공통 소켓 import
+
 
 const JoinPage: React.FC = () => {
   const [code, setCode] = useState('');
@@ -9,44 +11,95 @@ const JoinPage: React.FC = () => {
   const [showWarning, setShowWarning] = useState(false);
   const navigate = useNavigate();
 
-  // 게임 시작 감지
+
+  // ✅ WebSocket 연결 및 game_start 수신
   useEffect(() => {
     if (!showWarning) return;
 
-    const interval = setInterval(async () => {
-      try {
-        const joinCode = localStorage.getItem('joinCode');
-        const myNickname = localStorage.getItem('nickname');
-        if (!joinCode || !myNickname) return;
+    const joinCode = localStorage.getItem('joinCode');
+    const myNickname = localStorage.getItem('nickname');
+    if (!joinCode || !myNickname) return;
 
+    // ✅ 공통 소켓 연결
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    socket.emit('join_room', { code: joinCode });
+    console.log('🧩 join_room emit 완료:', joinCode);
+
+    socket.on('connect', () => {
+      console.log('✅ WebSocket 연결됨:', socket.id);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('❌ WebSocket 연결 실패:', err);
+    });
+
+    socket.on('game_start', async () => {
+      console.log('game_start 이벤트 수신됨 ')
+      try {
         const res = await axios.get(`http://34.64.111.205/sessions/${joinCode}`);
         const data = res.data;
 
-        // 🔍 닉네임으로 내 정보 찾기
         const myInfo = data.participants.find((p: any) => p.nickname === myNickname);
+        if (myInfo) {
+          // ✅ 추가: 나의 joinOrder와 전체 인원 수 저장
+          localStorage.setItem('joinOrder', String(myInfo.joinOrder));
+          localStorage.setItem('totalPlayers', String(data.participants.length));
 
-        console.log('🔵 전체 참여자 목록:', data.participants);
-        console.log('🟢 내 닉네임:', myNickname);
-        console.log('🟢 내 정보:', myInfo);
-
-        if (data.status === 'RUN' && myInfo) {
           navigate('/game/showorder', {
             state: {
               order: myInfo.joinOrder + 1,
               nickname: myInfo.nickname,
-              code: joinCode, // ✅ 여기 추가!!
-
+              code: joinCode,
             },
           });
         }
       } catch (err) {
-        console.error('게임 시작 감지 중 오류:', err);
+        console.error('게임 시작 후 내 정보 불러오기 오류:', err);
       }
-    }, 3000);
+    });
 
-    return () => clearInterval(interval);
+    //   const interval = setInterval(async () => {
+    //     try {
+    //       const joinCode = localStorage.getItem('joinCode');
+    //       const myNickname = localStorage.getItem('nickname');
+    //       if (!joinCode || !myNickname) return;
+
+    //       const res = await axios.get(`http://34.64.111.205/sessions/${joinCode}`);
+    //       const data = res.data;
+
+    //       // 🔍 닉네임으로 내 정보 찾기
+    //       const myInfo = data.participants.find((p: any) => p.nickname === myNickname);
+
+    //       console.log('🔵 전체 참여자 목록:', data.participants);
+    //       console.log('🟢 내 닉네임:', myNickname);
+    //       console.log('🟢 내 정보:', myInfo);
+
+    //       if (data.status === 'RUN' && myInfo) {
+    //         navigate('/game/showorder', {
+    //           state: {
+    //             order: myInfo.joinOrder + 1,
+    //             nickname: myInfo.nickname,
+    //             code: joinCode, // ✅ 여기 추가!!
+
+    //           },
+    //         });
+    //       }
+    //     } catch (err) {
+    //       console.error('게임 시작 감지 중 오류:', err);
+    //     }
+    //   }, 3000);
+
+    return () => {
+      socket.emit('leave_room', { code: joinCode });
+      socket.disconnect();
+    };
   }, [showWarning, navigate]);
 
+
+  // 세션 참여 요청 
   const handleJoin = async () => {
     if (!nickname.trim()) {
       alert('이름을 입력해주세요.');
@@ -62,9 +115,16 @@ const JoinPage: React.FC = () => {
         nickname,
       });
 
+      const { guestId, participantId } = response.data;
+
       // 백엔드에서 guestId가 오더라도 사용하지 않음
       localStorage.setItem('joinCode', code);
       localStorage.setItem('nickname', nickname);
+      console.log('guestId:', guestId);
+      console.log('participantId:', participantId);
+      localStorage.setItem('guestId', guestId);
+      localStorage.setItem('participantId', participantId);
+
       setShowWarning(true);
     } catch (error: any) {
       console.error('참여 실패:', error);

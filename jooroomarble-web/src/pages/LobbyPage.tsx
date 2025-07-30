@@ -3,11 +3,13 @@ import '../styles/LobbyPage.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+
 interface MapItem {
     id: number;
     title: string;
     editable: boolean;
 }
+
 
 const LobbyPage: React.FC = () => {
     const navigate = useNavigate();
