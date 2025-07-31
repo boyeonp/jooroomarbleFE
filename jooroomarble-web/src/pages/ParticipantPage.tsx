@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import '../styles/ParticipantPage.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';

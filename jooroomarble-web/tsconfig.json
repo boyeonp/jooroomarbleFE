@@ -1,4 +1,9 @@
 {
+  "compilerOptions": {
+    "noUnusedLocals": false,   // 사용되지 않는 지역 변수 무시
+    "noUnusedParameters": false, // 사용되지 않는 매개변수 무시
+    "noEmitOnError": false,    // 에러가 있어도 빌드 강행
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

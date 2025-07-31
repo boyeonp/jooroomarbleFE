@@ -32,7 +32,7 @@ const LobbyPage: React.FC = () => {
 
       setMaps(response.data);
       const defaultMap = response.data.find((map: MapItem) => map.title === '몰캠 주루마블');
-      if (defaultMap) setDefaultMapId(defaultMap.id);
+      if (defaultMapId) setDefaultMapId(defaultMap.id);
       setLoading(false);
     } catch (error) {
       console.error("맵 목록 불러오기 오류:", error);
