@@ -97,7 +97,7 @@ const BoardPage: React.FC = () => {
     socket.emit('join_room', { code });
 
     socket.on('turn_changed', (data: any) => {
-      const { dice, toPos, tile } = data;
+      const { dice, fromPos, toPos, tile } = data;
       setRolling(true);
       setDiceValue(dice);
 
@@ -107,9 +107,8 @@ const BoardPage: React.FC = () => {
 
         setTimeout(() => {
           setShowDicePopup(false);
-          const from = players[0].position;
 
-          animatePieceMovement(from, toPos, () => {
+          animatePieceMovement(fromPos, toPos, () => {
             setTimeout(() => {
               setTileData(prev =>
                 prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]
