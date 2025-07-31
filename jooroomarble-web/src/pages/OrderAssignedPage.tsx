@@ -105,7 +105,7 @@ const OrderAssignedPage: React.FC = () => {
 
     return (
         <div className='order-page'>
-            <div className='order-title'>순서 배정 완료!</div>
+            <div className='screen-order-title'>순서 배정 완료!</div>
             <div className="circle">
                 {orderedParticipants.map((p, index) => (
                     <div

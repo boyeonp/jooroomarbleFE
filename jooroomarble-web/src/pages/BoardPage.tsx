@@ -1,4 +1,3 @@
-// ✅ 수정된 BoardPage.tsx (Dice3D onRollEnd 기반으로 팝업 순서 조정)
 import React, { useEffect, useState } from 'react';
 import Tile from '../components/Tile';
 import CenterTile from '../components/CenterTile';
@@ -70,6 +69,19 @@ const BoardPage: React.FC = () => {
     }
   };
 
+  const animatePieceMovement = (from: number, to: number, onEnd: () => void) => {
+    const step = from < to ? 1 : -1;
+    let current = from;
+    const interval = setInterval(() => {
+      current += step;
+      setPlayers([{ id: 1, position: current }]);
+      if (current === to) {
+        clearInterval(interval);
+        onEnd();
+      }
+    }, 300);
+  };
+
   useEffect(() => {
     const initialize = async () => {
       await fetchInitialTiles();
@@ -95,45 +107,46 @@ const BoardPage: React.FC = () => {
 
         setTimeout(() => {
           setShowDicePopup(false);
-          setPlayers([{ id: 1, position: toPos }]);
+          const from = players[0].position;
 
-          setTimeout(() => {
-            setTileData(prev =>
-              prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]
-            );
+          animatePieceMovement(from, toPos, () => {
+            setTimeout(() => {
+              setTileData(prev =>
+                prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]
+              );
 
-            if (tile.defaultAction?.type === 'bomb') {
-              setBombCount(prev => {
-                const updated = prev + 0.5;
-                console.log(`폭탄 칸 도착! 현재 적립된 잔 수: ${updated}`);
-                return updated;
-              });
-            }
+              if (tile.defaultAction?.type === 'bomb') {
+                setBombCount(prev => {
+                  const updated = prev + 0.5;
+                  console.log(`폭탄 칸 도착! 현재 적립된 잔 수: ${updated}`);
+                  return updated;
+                });
+              }
 
-            if (tile.idx === 0) {
-              const currentCount = bombCount;
-              setActivePopup({
-                tile: {
-                  ...tile,
-                  description: 'START 적립 알림',
-                  defaultAction: {
-                    type: 'popup',
-                    message: `${currentCount}잔이 적립되어 있습니다!`,
+              if (tile.idx === 0) {
+                const currentCount = bombCount;
+                setActivePopup({
+                  tile: {
+                    ...tile,
+                    description: 'START 적립 알림',
+                    defaultAction: {
+                      type: 'popup',
+                      message: `${currentCount}잔이 적립되어 있습니다!`,
+                    },
                   },
-                },
-              });
-              setBombCount(0);
-            } else {
-              setTimeout(() => {
-                setActivePopup({ tile });
-              }, 1200);
-            }
-          }, 1500);
-        }, 3000);
+                });
+                setBombCount(0);
+              } else {
+                setTimeout(() => {
+                  setActivePopup({ tile });
+                }, 1000);
+              }
+            }, 500);
+          });
+        }, 1000);
       };
 
-      // rolling이 true인 상태에서 Dice3D의 onRollEnd로 위 함수 전달
-      setTimeout(handleRollEnd, 1500); // fallback 대기 시간
+      setTimeout(handleRollEnd, 1500);
     });
 
     return () => {
@@ -155,8 +168,11 @@ const BoardPage: React.FC = () => {
       alert('게임이 종료되었습니다.');
       navigate('/lobby');
     } catch (e: any) {
-      console.error('게임 종료 실패:', e);
-      alert('게임 종료 중 오류가 발생했습니다.');
+      if (e.response?.status === 403) {
+        alert('❌ 방장만 게임을 종료할 수 있습니다.');
+      } else {
+        alert('⚠️ 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -167,32 +183,42 @@ const BoardPage: React.FC = () => {
       ) : (
         <>
           <button className="game-exit-button" onClick={handleGameEnd}>게임 종료</button>
+
           <div className="board-container">
             {tileOrder
               .map(idx => tileData.find(t => t.idx === idx))
               .filter((tile): tile is TileInfo => !!tile)
-              .map(tile => (
-                <Tile key={tile.idx} className={`tile tile-${tile.idx}`} text={tile.description}>
-                  {players.filter(p => p.position === tile.idx).map(p => (<Piece key={p.id} />))}
-                  {tile.idx === 0 && (
-                    <div className="start-bomb-count">
-                      🍺 {bombCount}잔 적립
-                    </div>
-                  )}
-                </Tile>
-              ))}
+              .map(tile => {
+                const isDiagonal = tile.idx >= 24 && tile.idx <= 28;
+                return (
+                  <Tile
+                    key={tile.idx}
+                    className={`tile tile-${tile.idx}`}
+                    text={`${tile.defaultAction?.type === 'bomb' ? '💣 ' : ''}${tile.description}`}
+                  >
+                    {!isDiagonal && players.filter(p => p.position === tile.idx).map(p => (
+                      <Piece key={p.id} />
+                    ))}
+                  </Tile>
+                );
+              })}
 
             <div className="center-tile-area">
+              <div className="bomb-counter-box">
+                <span className="bomb-icon">💣</span>
+                <span className="bomb-count">현재 적립된 잔: <span style={{ color: 'red' }}>{bombCount}잔</span></span>
+              </div>
               <CenterTile />
               <div className="dice-container-wrapper">
-                <Dice3D number={diceValue} rolling={rolling} onRollEnd={() => {}} />
+                <Dice3D number={diceValue} rolling={rolling} onRollEnd={() => { }} />
               </div>
               <div className='announce'>순서에 따라 휴대폰에서 주사위를 돌려주세요.</div>
-
               {[24, 25, 26, 27, 28].map((pos, i) => (
                 <div key={pos} className={`diagonal-tile diagonal-tile-${i}`}>
                   <div className="text">{i % 2 === 0 ? '술' : '물'}</div>
-                  {players.some(p => p.position === pos) && <Piece />}
+                  {players.filter(p => p.position === pos).map(p => (
+                    <Piece key={p.id} />
+                  ))}
                 </div>
               ))}
             </div>
@@ -200,9 +226,10 @@ const BoardPage: React.FC = () => {
 
           {showDicePopup && (
             <Popup
-              title={`🎲 주사위 결과: ${diceValue}`}
-              description={`${diceValue} 칸 이동!`}
+              title={`🎲 주사위 결과: ${diceValue}칸 이동`}
+              description=''
               onClose={closeDicePopup}
+              variant='board'
             />
           )}
 
@@ -210,9 +237,11 @@ const BoardPage: React.FC = () => {
             <Popup
               title={activePopup.tile.description}
               description={
-                activePopup.tile.defaultAction?.type === 'popup'
-                  ? activePopup.tile.defaultAction.message ?? ''
-                  : ''
+                <>
+                  {activePopup.tile.defaultAction?.type === 'popup' && (
+                    <div>{activePopup.tile.defaultAction.message}</div>
+                  )}
+                </>
               }
               onClose={handleClosePopup}
             />

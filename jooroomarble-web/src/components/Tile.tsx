@@ -11,7 +11,7 @@ interface TileProps {
 const Tile: React.FC<TileProps> = ({ text, className, onClick, children }) => {
   return (
     <div className={`tile ${className}`} onClick={onClick}>
-      {text}
+      <div className="tile-text">{text}</div> {/* ✅ 텍스트 래핑 */}
       <div className="pieces-container">{children}</div>
     </div>
   );

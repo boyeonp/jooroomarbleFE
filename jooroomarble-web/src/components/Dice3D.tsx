@@ -26,7 +26,7 @@ const Dice3D: React.FC<Dice3DProps> = ({ number, rolling, onRollEnd}) => {
                 // ✅ 애니메이션 끝난 후 콜백 실행 (1.5초 후)
                 const timeout = setTimeout(() => {
                     if (onRollEnd) onRollEnd();
-                }, 1500);
+                }, 1000);
 
                 return () => clearTimeout(timeout);
             }

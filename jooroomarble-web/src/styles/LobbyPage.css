@@ -100,3 +100,68 @@
   border-radius: 20px;
   font-size: 20px;
 }
+.loading-text {
+  font-size: 50px;
+}
+/* 팝업 전체 배경 (어두운 반투명 오버레이) */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* 팝업 콘텐츠 박스 */
+.popup-content {
+  position: relative; /* 닫기 버튼 위치 기준 */
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px 24px 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  width: 900px;
+  height: 800px;
+  text-align: center;
+}
+
+/* 팝업 제목 */
+.popup-content h2 {
+  margin-top: 0;
+  font-size: 60px;
+  font-weight: bold;
+}
+
+/* 미리보기 이미지 영역 */
+.map-image-placeholder {
+  margin-bottom: 24px;
+}
+
+.map-preview-image {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 2px solid #ddd;
+}
+
+/* 닫기 버튼 (오른쪽 상단 고정) */
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #000;
+}

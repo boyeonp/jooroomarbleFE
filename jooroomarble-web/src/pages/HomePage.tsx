@@ -11,7 +11,7 @@ const HomePage: React.FC = () => {
                     <div className='main-title'>주루마블</div>
                     <div className='web-text'>WEB</div>
                 </div>
-                <button className='start-button' onClick={() => navigate('/login')}>게임 시작</button>
+                <button className='home-start-button' onClick={() => navigate('/login')}>게임 시작</button>
             </div>
     );
 };

@@ -87,7 +87,7 @@ const RollDicePage: React.FC = () => {
       const { dice, tile } = res.data;
       setDiceValue(dice);
       setPopupText(
-        `📍 ${tile.description || '도착한 칸'}\n\n📝 ${tile.defaultAction?.message || ''}`
+        `📍 ${tile.description || '도착한 칸'}\n\n ${tile.defaultAction?.message || ''}`
       );
       setShowPopup(true);
       setRolling(false);
@@ -135,6 +135,7 @@ const RollDicePage: React.FC = () => {
           title={`🎲 주사위 결과: ${diceValue}`}
           description={popupText}
           onClose={() => setShowPopup(false)}
+          variant='roll'
         />
       )}
     </div>
