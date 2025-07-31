@@ -82,7 +82,7 @@ const BoardPage: React.FC = () => {
       }
       setPlayers([{ id: 1, position: path[index] }]);
       index++;
-    }, 350); // 애니메이션 속도 약간 빠르게 조정
+    }, 350);
   };
 
   /* ─────────────────── 이동 종료 후 로직 ─────────────────── */
@@ -122,9 +122,9 @@ const BoardPage: React.FC = () => {
     socket.emit('join_room', { code });
 
     const handleTurnChanged = (data: any) => {
-      const { dice, fromPos, toPos, tile } = data;
+      const { fromPos, toPos, tile } = data;
       setRolling(true);
-      setDiceValue(dice);
+      setDiceValue(data.dice);
 
       const handleRollEnd = () => {
         setRolling(false);
@@ -133,35 +133,40 @@ const BoardPage: React.FC = () => {
           setShowDicePopup(false);
 
           let path: number[] = [];
-          let current = fromPos;
-
-          // 서버가 보내준 toPos와 주사위 값을 기반으로 경로를 재구성합니다.
-          // 이는 클라이언트에서 정확한 애니메이션을 보여주기 위함입니다.
           
-          // 1. 주사위 값만큼 한 칸씩 이동하며 경로 생성
-          path.push(current);
-          for (let i = 0; i < dice; i++) {
-            // 15번 칸(포탈)에 도착하면 24번으로 점프
-            if (current === 15) {
-              current = 24;
-            } else {
-              current = (current + 1);
-              // 메인 보드(0-23) 순환 처리
-              if (current > 23 && current < 29) {
-                 // 이전에 있던 칸이 대각선이 아니었다면, 0으로 보냄
-                 const prevPos = path[path.length -1];
-                 if(prevPos < 24) current = 0;
-              }
-            }
-            path.push(current);
+          // Case 1: 포탈 진입 (시작은 메인보드, 끝은 대각선)
+          if (fromPos < 24 && toPos >= 24 && toPos <= 28) {
+            for (let i = fromPos; i <= 15; i++) path.push(i);
+            for (let i = 24; i <= toPos; i++) path.push(i);
           }
-
-          // 2. 최종 도착지가 특수 미끄럼틀 칸인지 확인하고 경로에 추가
-          const finalPos = path[path.length - 1];
-          if (finalPos === 23 && toPos === 0) {
-            path.push(0);
-          } else if (finalPos === 28 && toPos === 5) {
+          // Case 2: 대각선 위에서 이동
+          else if (fromPos >= 24 && toPos >= 24 && toPos <= 28) {
+            for (let i = fromPos; i <= toPos; i++) path.push(i);
+          }
+          // Case 3: 대각선에서 탈출 (28 -> 5)
+          else if (fromPos >= 24 && toPos === 5) {
+            for (let i = fromPos; i <= 28; i++) path.push(i);
             path.push(5);
+          }
+          // Case 4: 23 -> 0 미끄럼틀
+          else if (toPos === 0 && fromPos !== 0) { // 0->0 이동이 아닌 경우
+            let current = fromPos;
+            path.push(current);
+            while (current !== 23) {
+              current = (current + 1) % 24;
+              path.push(current);
+            }
+            path.push(0);
+          }
+          // Case 5: 그 외 일반 이동
+          else {
+            let current = fromPos;
+            path.push(current);
+            // toPos에 도달할 때까지 경로 추가 (순환 포함)
+            while (current !== toPos) {
+              current = (current + 1) % 24;
+              path.push(current);
+            }
           }
           
           animatePieceAlongPath(path, () => onMoveEnd(tile));
