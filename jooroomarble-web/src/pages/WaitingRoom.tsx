@@ -71,7 +71,7 @@ const WaitingRoomPage: React.FC = () => {
                 return;
             }
 
-            const res = await axios.get(`http://34.64.111.205/sessions/${code}`, {
+            const res = await axios.get(`https://api.jooroomarble.store/sessions/${code}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -107,7 +107,7 @@ const WaitingRoomPage: React.FC = () => {
 
         try {
             const res = await axios.post(
-                `http://34.64.111.205/sessions/${code}/start`,
+                `https://api.jooroomarble.store/sessions/${code}/start`,
                 {},
                 {
                     headers: {

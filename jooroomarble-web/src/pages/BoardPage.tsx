@@ -45,7 +45,7 @@ const BoardPage: React.FC = () => {
       const guestId = localStorage.getItem('guestId');
       if ((!token && !guestId) || !code) return;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      const res = await axios.get(`http://34.64.111.205/sessions/${code}/board`, { headers });
+      const res = await axios.get(`https://api.jooroomarble.store/sessions/${code}/board`, { headers });
       const mapTiles = res.data?.map?.tiles || [];
       setTileData(mapTiles);
     } catch (e) {
@@ -59,7 +59,7 @@ const BoardPage: React.FC = () => {
       const guestId = localStorage.getItem('guestId');
       if ((!token && !guestId) || !code) return;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      const res = await axios.get(`http://34.64.111.205/sessions/${code}/status`, { headers });
+      const res = await axios.get(`https://api.jooroomarble.store/sessions/${code}/status`, { headers });
       const myPlayer = res.data.participants.find((p: any) => p.guestId === guestId);
       if (myPlayer) setPlayers([{ id: 1, position: res.data.currentPos }]);
       const tile = res.data.currentTile;
@@ -163,7 +163,7 @@ const BoardPage: React.FC = () => {
       const guestId = localStorage.getItem('guestId');
       if (!code || (!token && !guestId)) return;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      await axios.delete(`http://34.64.111.205/sessions/${code}`, { headers });
+      await axios.delete(`https://api.jooroomarble.store/sessions/${code}`, { headers });
       alert('게임이 종료되었습니다.');
       navigate('/lobby');
     } catch (e: any) {

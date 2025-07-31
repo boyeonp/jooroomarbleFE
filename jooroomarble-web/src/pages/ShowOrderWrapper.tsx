@@ -20,7 +20,7 @@ const ShowOrderWrapper: React.FC = () => {
 
         const checkGameStatus = async () => {
             try {
-                const response = await axios.get(`http://34.64.111.205/sessions/${code}`);
+                const response = await axios.get(`https://api.jooroomarble.store/sessions/${code}`);
 
                 if (response.data.status === 'PLAYING') {
                     navigate(`/game/rolldice/${code}`);

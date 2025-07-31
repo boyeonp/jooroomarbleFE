@@ -14,7 +14,7 @@ const JoinPage: React.FC = () => {
   // 닉네임 중복 체크 함수
   const checkNicknameDuplicate = async (sessionCode: string, nickname: string) => {
     try {
-      const res = await axios.get(`http://34.64.111.205/sessions/${sessionCode}`);
+      const res = await axios.get(`https://api.jooroomarble.store/sessions/${sessionCode}`);
       const participants = res.data?.participants || [];
       console.log('참가자 목록:', participants);
       return participants.some((p: any) => p.nickname === nickname);
@@ -51,7 +51,7 @@ const JoinPage: React.FC = () => {
     socket.on('game_start', async () => {
       console.log('game_start 이벤트 수신됨 ')
       try {
-        const res = await axios.get(`http://34.64.111.205/sessions/${joinCode}`);
+        const res = await axios.get(`https://api.jooroomarble.store/sessions/${joinCode}`);
         const data = res.data;
 
         const myInfo = data.participants.find((p: any) => p.nickname === myNickname);
@@ -79,7 +79,7 @@ const JoinPage: React.FC = () => {
     //       const myNickname = localStorage.getItem('nickname');
     //       if (!joinCode || !myNickname) return;
 
-    //       const res = await axios.get(`http://34.64.111.205/sessions/${joinCode}`);
+    //       const res = await axios.get(`https://api.jooroomarble.store/sessions/${joinCode}`);
     //       const data = res.data;
 
     //       // 🔍 닉네임으로 내 정보 찾기
@@ -131,7 +131,7 @@ const JoinPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(`http://34.64.111.205/sessions/${code}/join`, {
+      const response = await axios.post(`https://api.jooroomarble.store/sessions/${code}/join`, {
         nickname,
       });
 

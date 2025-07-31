@@ -50,7 +50,7 @@ const OrderAssignedPage: React.FC = () => {
             }
             try {
                 const token = localStorage.getItem('accessToken');
-                const res = await axios.get(`http://34.64.111.205/sessions/${code}`, {
+                const res = await axios.get(`https://api.jooroomarble.store/sessions/${code}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -82,7 +82,7 @@ const OrderAssignedPage: React.FC = () => {
 
         try {
             await axios.post(
-                `http://34.64.111.205/sessions/${code}/begin`,
+                `https://api.jooroomarble.store/sessions/${code}/begin`,
                 {},
                 {
                     headers: {

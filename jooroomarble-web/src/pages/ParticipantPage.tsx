@@ -27,7 +27,7 @@ const ParticipantPage = () => {
             return;
         }
         try {
-            const response = await axios.post("http://34.64.111.205/sessions",
+            const response = await axios.post("https://api.jooroomarble.store/sessions",
                 {
                     mapId,
                     maxPlayers: playerCount,

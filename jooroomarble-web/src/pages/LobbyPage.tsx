@@ -26,7 +26,7 @@ const LobbyPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.get('http://34.64.111.205/maps', {
+      const response = await axios.get('https://api.jooroomarble.store/maps', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -59,7 +59,7 @@ const LobbyPage: React.FC = () => {
         is_builtin: false,
       };
 
-      await axios.post('http://34.64.111.205/maps', newMap, {
+      await axios.post('https://api.jooroomarble.store/maps', newMap, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -17,7 +17,7 @@ const LoginPage: React.FC = () => {
         }
 
         try {
-            const response = await axios.post('http://34.64.111.205/auth/login', { email, password });
+            const response = await axios.post('https://api.jooroomarble.store/auth/login', { email, password });
             const {accessToken} = response.data;
             localStorage.setItem('accessToken', accessToken);
             alert("로그인 성공");

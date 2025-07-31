@@ -15,7 +15,7 @@ const SignupPage: React.FC = () => {
       console.log("보내는 값:", { email, password, nickname });
 
     try {
-      const response = await axios.post('http://34.64.111.205/auth/signup', { email, password, nickname });
+      const response = await axios.post('https://api.jooroomarble.store/auth/signup', { email, password, nickname });
 
 
       alert("회원가입 성공");   

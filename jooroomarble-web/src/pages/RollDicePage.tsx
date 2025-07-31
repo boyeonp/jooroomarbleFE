@@ -21,7 +21,7 @@ const RollDicePage: React.FC = () => {
 
   const checkInitialTurn = async () => {
     try {
-      const res = await axios.get(`http://34.64.111.205/sessions/${code}`);
+      const res = await axios.get(`https://api.jooroomarble.store/sessions/${code}`);
       const data = res.data;
 
       if (data.status === 'PLAYING' && joinOrder === 0) {
@@ -78,7 +78,7 @@ const RollDicePage: React.FC = () => {
     setRolling(true);
     try {
       const res = await axios.post(
-        `http://34.64.111.205/sessions/${code}/turn`,
+        `https://api.jooroomarble.store/sessions/${code}/turn`,
         { guestId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
