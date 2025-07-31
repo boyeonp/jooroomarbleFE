@@ -26,6 +26,8 @@ html, body, #root {
 
 body {
   min-width: 320px;
+    font-family: 'Jua';
+
 }
 
 h1 {
