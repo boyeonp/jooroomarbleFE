@@ -1,35 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import '../styles/JoinPage.css';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { socket } from '../socket/socket'; // ✅ 공통 소켓 import
-
+import React, { useEffect, useState } from "react";
+import "../styles/JoinPage.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { socket } from "../socket/socket"; // ✅ 공통 소켓 import
+import { useLocation } from "react-router-dom";
 
 const JoinPage: React.FC = () => {
-  const [code, setCode] = useState('');
-  const [nickname, setNickname] = useState('');
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const [code, setCode] = useState(() =>
+    (params.get("code") ?? "").toUpperCase()
+  );
+
+  const [nickname, setNickname] = useState("");
   const [showWarning, setShowWarning] = useState(false);
   const navigate = useNavigate();
 
   // 닉네임 중복 체크 함수
-  const checkNicknameDuplicate = async (sessionCode: string, nickname: string) => {
+  const checkNicknameDuplicate = async (
+    sessionCode: string,
+    nickname: string
+  ) => {
     try {
-      const res = await axios.get(`https://api.jooroomarble.store/sessions/${sessionCode}`);
+      const res = await axios.get(
+        `https://api.jooroomarble.store/sessions/${sessionCode}`
+      );
       const participants = res.data?.participants || [];
-      console.log('참가자 목록:', participants);
+      console.log("참가자 목록:", participants);
       return participants.some((p: any) => p.nickname === nickname);
     } catch (err) {
-      console.error('닉네임 중복 확인 실패:', err);
+      console.error("닉네임 중복 확인 실패:", err);
       return false;
     }
-  }
+  };
 
   // ✅ WebSocket 연결 및 game_start 수신
   useEffect(() => {
     if (!showWarning) return;
 
-    const joinCode = localStorage.getItem('joinCode');
-    const myNickname = localStorage.getItem('nickname');
+    const joinCode = localStorage.getItem("joinCode");
+    const myNickname = localStorage.getItem("nickname");
     if (!joinCode || !myNickname) return;
 
     // ✅ 공통 소켓 연결
@@ -37,30 +47,37 @@ const JoinPage: React.FC = () => {
       socket.connect();
     }
 
-    socket.emit('join_room', { code: joinCode });
-    console.log('🧩 join_room emit 완료:', joinCode);
+    socket.emit("join_room", { code: joinCode });
+    console.log("🧩 join_room emit 완료:", joinCode);
 
-    socket.on('connect', () => {
-      console.log('✅ WebSocket 연결됨:', socket.id);
+    socket.on("connect", () => {
+      console.log("✅ WebSocket 연결됨:", socket.id);
     });
 
-    socket.on('connect_error', (err) => {
-      console.error('❌ WebSocket 연결 실패:', err);
+    socket.on("connect_error", (err) => {
+      console.error("❌ WebSocket 연결 실패:", err);
     });
 
-    socket.on('game_start', async () => {
-      console.log('game_start 이벤트 수신됨 ')
+    socket.on("game_start", async () => {
+      console.log("game_start 이벤트 수신됨 ");
       try {
-        const res = await axios.get(`https://api.jooroomarble.store/sessions/${joinCode}`);
+        const res = await axios.get(
+          `https://api.jooroomarble.store/sessions/${joinCode}`
+        );
         const data = res.data;
 
-        const myInfo = data.participants.find((p: any) => p.nickname === myNickname);
+        const myInfo = data.participants.find(
+          (p: any) => p.nickname === myNickname
+        );
         if (myInfo) {
           // ✅ 추가: 나의 joinOrder와 전체 인원 수 저장
-          localStorage.setItem('joinOrder', String(myInfo.joinOrder));
-          localStorage.setItem('totalPlayers', String(data.participants.length));
+          localStorage.setItem("joinOrder", String(myInfo.joinOrder));
+          localStorage.setItem(
+            "totalPlayers",
+            String(data.participants.length)
+          );
 
-          navigate('/game/showorder', {
+          navigate("/game/showorder", {
             state: {
               order: myInfo.joinOrder + 1,
               nickname: myInfo.nickname,
@@ -69,7 +86,7 @@ const JoinPage: React.FC = () => {
           });
         }
       } catch (err) {
-        console.error('게임 시작 후 내 정보 불러오기 오류:', err);
+        console.error("게임 시작 후 내 정보 불러오기 오류:", err);
       }
     });
 
@@ -105,53 +122,55 @@ const JoinPage: React.FC = () => {
     //   }, 3000);
 
     return () => {
-      socket.emit('leave_room', { code: joinCode });
+      socket.emit("leave_room", { code: joinCode });
       socket.disconnect();
     };
   }, [showWarning, navigate]);
 
-
-  // 세션 참여 요청 
+  // 세션 참여 요청
   const handleJoin = async () => {
     if (!nickname.trim()) {
-      alert('이름을 입력해주세요.');
+      alert("이름을 입력해주세요.");
       return;
     }
     if (!code.trim()) {
-      alert('참여 코드를 입력해주세요.');
+      alert("참여 코드를 입력해주세요.");
       return;
     }
 
     // 닉네임 중복 체크
     const isDuplicate = await checkNicknameDuplicate(code, nickname);
-    console.log('닉네임중복체크:', isDuplicate);
+    console.log("닉네임중복체크:", isDuplicate);
     if (isDuplicate) {
-      alert('이미 사용 중인 닉네임입니다. 다른 이름을 입력해주세요.');
+      alert("이미 사용 중인 닉네임입니다. 다른 이름을 입력해주세요.");
       return;
     }
 
     try {
-      const response = await axios.post(`https://api.jooroomarble.store/sessions/${code}/join`, {
-        nickname,
-      });
+      const response = await axios.post(
+        `https://api.jooroomarble.store/sessions/${code}/join`,
+        {
+          nickname,
+        }
+      );
 
       const { guestId, participantId } = response.data;
 
       // 백엔드에서 guestId가 오더라도 사용하지 않음
-      localStorage.setItem('joinCode', code);
-      localStorage.setItem('nickname', nickname);
-      console.log('guestId:', guestId);
-      console.log('participantId:', participantId);
-      localStorage.setItem('guestId', guestId);
-      localStorage.setItem('participantId', participantId);
+      localStorage.setItem("joinCode", code);
+      localStorage.setItem("nickname", nickname);
+      console.log("guestId:", guestId);
+      console.log("participantId:", participantId);
+      localStorage.setItem("guestId", guestId);
+      localStorage.setItem("participantId", participantId);
 
       setShowWarning(true);
     } catch (error: any) {
-      console.error('참여 실패:', error);
+      console.error("참여 실패:", error);
       if (error.response?.status === 403) {
-        alert('이미 인원이 가득 찼습니다. 다른 방을 이용해주세요.');
+        alert("이미 인원이 가득 찼습니다. 다른 방을 이용해주세요.");
       } else {
-        alert('참여에 실패했습니다. 코드를 확인해주세요.');
+        alert("참여에 실패했습니다. 코드를 확인해주세요.");
       }
     }
   };
@@ -166,7 +185,7 @@ const JoinPage: React.FC = () => {
         <span className="blue">몰캠 주루마블</span>에
         <br />
         참여를 원하시면, <br />
-        <span className="yellow">참여코드와 이름</span>을 <br/> 입력하세요.
+        <span className="yellow">참여코드와 이름</span>을 <br /> 입력하세요.
       </p>
       <input
         className="name-input"

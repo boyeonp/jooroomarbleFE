@@ -1,7 +1,7 @@
 .join-container {
   width: 100vw;
   height: 100vh;
-  background-image: url('../assets/background.png'); 
+  background-image: url("../assets/background.png");
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,7 +9,7 @@
   box-sizing: border-box;
   text-align: center;
 
-    /* 모바일 전용 스타일 강제 */
+  /* 모바일 전용 스타일 강제 */
   max-width: 430px;
   margin: 0 auto;
 }
@@ -21,8 +21,8 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
   border-color: #24394c;
   line-height: 0.8;
-  letter-spacing: -2.0px;
-  -webkit-text-stroke: 3px #24394C;
+  letter-spacing: -2px;
+  -webkit-text-stroke: 3px #24394c;
 }
 
 .highlight {
@@ -32,21 +32,39 @@
 
 .instruction {
   font-size: 50px;
-  letter-spacing: -2.0px;
+  letter-spacing: -2px;
   font-weight: 1600;
-  line-height: 1.0;
+  line-height: 1;
   color: white;
   margin-bottom: 40px;
   margin-top: 100px;
-  -webkit-text-stroke: 2px #24394C;
+  -webkit-text-stroke: 2px #24394c;
 }
 
 .instruction .blue {
-  color:#87C7DB;
+  color: #87c7db;
 }
 
 .instruction .yellow {
-  color: #EAB95B;
+  color: #eab95b;
+}
+/* QR 컨테이너 */
+.qr-box {
+  position: relative;
+  display: inline-block; /* 텍스트 + QR 한 덩어리 */
+  margin-right: 32px; /* 참가자 목록과 간격 */
+}
+
+/* QR 위에 겹치는 코드 텍스트 */
+.qr-code-text {
+  position: absolute;
+  top: -38px; /* 원하는 만큼 위로 */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #fa9800;
 }
 
 .name-input {
@@ -56,21 +74,21 @@
   border: 2px solid #000;
   border-radius: 10px;
   font-size: 16px;
-  background-color:rgba(255, 255, 255, 0.4) ;
+  background-color: rgba(255, 255, 255, 0.4);
 }
-.sub-text{
-    font-size: 14px;
-    color: #9d9d9d;
-    margin-bottom: 30px;
+.sub-text {
+  font-size: 14px;
+  color: #9d9d9d;
+  margin-bottom: 30px;
 }
 .join-button {
   width: 150px;
   height: 50px;
   padding: 10px;
   background-color: #eab95b;
-  border-color: #24394c;;
+  border-color: #24394c;
   border-radius: 30px;
-  border-width: 3px;;
+  border-width: 3px;
   font-size: 25px;
   font-weight: bold;
   color: #24394c;

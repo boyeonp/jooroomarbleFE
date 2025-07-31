@@ -1,7 +1,7 @@
 .waiting-room {
   width: 100vw;
   height: 100vh;
-  background-image: url('../assets/sub_image.png');
+  background-image: url("../assets/sub_image.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -14,8 +14,8 @@
 .waiting-title {
   font-size: 150px;
   font-weight: 900;
-  color: #87C7DB;
-  -webkit-text-stroke: 5px #24394C;
+  color: #87c7db;
+  -webkit-text-stroke: 5px #24394c;
 }
 
 .content-wrapper {
@@ -32,11 +32,29 @@
   background-color: white;
   border-radius: 10px;
 }
+/* QR 컨테이너 */
+.qr-box {
+  position: relative;
+  display: inline-block; /* 텍스트 + QR 한 덩어리 */
+  margin-right: 32px; /* 참가자 목록과 간격 */
+}
+
+/* QR 위에 겹치는 코드 텍스트 */
+.qr-code-text {
+  position: absolute;
+  top: -38px; /* 원하는 만큼 위로 */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #fa9800;
+}
 
 .participant-list {
   text-align: left;
   font-size: 40px;
-  color: #24394C;
+  color: #24394c;
   font-weight: bold;
 }
 
@@ -52,9 +70,9 @@
   width: 240px;
   height: 60px;
 
-  background-color: #EAB95B;
-  color: #24394C;
-  border: 3px solid #24394C;
+  background-color: #eab95b;
+  color: #24394c;
+  border: 3px solid #24394c;
   border-radius: 40px;
 
   cursor: pointer;
@@ -90,7 +108,6 @@
 .participant-scroll ul {
   list-style-type: disc;
   padding-left: 20px;
-
 }
 
 .participant-scroll li {
@@ -111,7 +128,6 @@
   display: flex;
   flex-direction: column;
   /* ✅ 중앙 정렬을 위해 flex 추가 */
-
 }
 
 .join-code {
