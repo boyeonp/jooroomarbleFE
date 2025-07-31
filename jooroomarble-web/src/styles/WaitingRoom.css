@@ -37,18 +37,28 @@
   position: relative;
   display: inline-block; /* 텍스트 + QR 한 덩어리 */
   margin-right: 32px; /* 참가자 목록과 간격 */
+  flex-direction: column ;
+}
+.qr-code-text-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  gap: 10px; /* 참여코드 : 와 코드 간격 */
+  width: 300px;
 }
 
-/* QR 위에 겹치는 코드 텍스트 */
+.qr-label {
+  color: #444;
+}
+
 .qr-code-text {
-  position: absolute;
-  top: -38px; /* 원하는 만큼 위로 */
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: 2.5px;
-  color: #fa9800;
+  color: #f4a300; /* 오렌지 강조 */
+  font-size: 36px;
+  font-weight: 800;
 }
 
 .participant-list {

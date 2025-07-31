@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react'; // ✨ 수정: useRef 추가
 import Tile from '../components/Tile';
 import CenterTile from '../components/CenterTile';
 import Popup from '../components/Popup';
@@ -30,6 +30,7 @@ const BoardPage: React.FC = () => {
   const { code } = useParams();
   const navigate = useNavigate();
 
+  /* ───────────────────────── state & ref ───────────────────────── */
   const [diceValue, setDiceValue] = useState(1);
   const [rolling, setRolling] = useState(false);
   const [showDicePopup, setShowDicePopup] = useState(false);
@@ -38,7 +39,9 @@ const BoardPage: React.FC = () => {
   const [tileData, setTileData] = useState<TileInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [bombCount, setBombCount] = useState(0);
+  const bombCountRef = useRef(0);                        // ✨ 수정: 최신 값을 보관
 
+  /* ───────────────────────── 데이터 요청 ───────────────────────── */
   const fetchInitialTiles = async () => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -46,8 +49,7 @@ const BoardPage: React.FC = () => {
       if ((!token && !guestId) || !code) return;
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       const res = await axios.get(`https://api.jooroomarble.store/sessions/${code}/board`, { headers });
-      const mapTiles = res.data?.map?.tiles || [];
-      setTileData(mapTiles);
+      setTileData(res.data?.map?.tiles || []);
     } catch (e) {
       console.error('초기 보드 데이터 로딩 실패:', e);
     }
@@ -69,6 +71,7 @@ const BoardPage: React.FC = () => {
     }
   };
 
+  /* ───────────────────────── 말 애니메이션 ───────────────────────── */
   const animatePieceMovement = (from: number, to: number, onEnd: () => void) => {
     const step = from < to ? 1 : -1;
     let current = from;
@@ -82,25 +85,26 @@ const BoardPage: React.FC = () => {
     }, 300);
   };
 
+  /* ───────────────────────── 최초 로드 ───────────────────────── */
   useEffect(() => {
     const initialize = async () => {
       await fetchInitialTiles();
       await fetchGameState();
       setLoading(false);
     };
-
     initialize();
 
     if (!code) return;
     if (!socket.connected) socket.connect();
-
     socket.emit('join_room', { code });
 
+    /* ───────── 서버 이벤트: 턴 변경 ───────── */
     socket.on('turn_changed', (data: any) => {
       const { dice, fromPos, toPos, tile } = data;
       setRolling(true);
       setDiceValue(dice);
 
+      /* 주사위 3D 애니 끝나면 실행 */
       const handleRollEnd = () => {
         setRolling(false);
         setShowDicePopup(true);
@@ -108,43 +112,43 @@ const BoardPage: React.FC = () => {
         setTimeout(() => {
           setShowDicePopup(false);
 
+          /* 말 이동 애니메이션 */
           animatePieceMovement(fromPos, toPos, () => {
-            setTimeout(() => {
-              setTileData(prev =>
-                prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]
-              );
+            /* 이동 끝 후 타일 처리 */
+            setTileData(prev => (prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]));
 
-              if (tile.defaultAction?.type === 'bomb') {
-                setBombCount(prev => {
-                  const updated = prev + 0.5;
-                  console.log(`폭탄 칸 도착! 현재 적립된 잔 수: ${updated}`);
-                  return updated;
-                });
-              }
+            /* 폭탄 칸 적립 */
+            if (tile.defaultAction?.type === 'bomb') {
+              setBombCount(prev => {
+                const next = prev + 1;
+                bombCountRef.current = next;           // ✨ 수정: ref 동기화
+                return next;
+              });
+            }
 
-              if (tile.idx === 0) {
-                const currentCount = bombCount;
-                setActivePopup({
-                  tile: {
-                    ...tile,
-                    description: 'START 적립 알림',
-                    defaultAction: {
-                      type: 'popup',
-                      message: `${currentCount}잔이 적립되어 있습니다!`,
-                    },
+            /* START 칸 체크 & 팝업 */
+            if (tile.idx === 0) {
+              const currentCount = bombCountRef.current;   // ✨ 수정: 항상 최신 값
+              setActivePopup({
+                tile: {
+                  ...tile,
+                  description: 'START 적립 알림',
+                  defaultAction: {
+                    type: 'popup',
+                    message: `${currentCount}잔이 적립되어 있습니다!`,
                   },
-                });
-                setBombCount(0);
-              } else {
-                setTimeout(() => {
-                  setActivePopup({ tile });
-                }, 1000);
-              }
-            }, 500);
+                },
+              });
+              bombCountRef.current = 0;                    // ✨ 수정: ref 리셋
+              setBombCount(0);                             // ✨ 수정: state 리셋
+            } else {
+              setTimeout(() => setActivePopup({ tile }), 800);
+            }
           });
-        }, 1000);
+        }, 800);
       };
 
+      /* Dice3D 가 1.5초 돌도록 맞춰줌 */
       setTimeout(handleRollEnd, 1500);
     });
 
@@ -154,6 +158,7 @@ const BoardPage: React.FC = () => {
     };
   }, []);
 
+  /* ───────────────────────── 기타 핸들러 ───────────────────────── */
   const closeDicePopup = () => setShowDicePopup(false);
   const handleClosePopup = () => setActivePopup(null);
 
@@ -167,14 +172,11 @@ const BoardPage: React.FC = () => {
       alert('게임이 종료되었습니다.');
       navigate('/lobby');
     } catch (e: any) {
-      if (e.response?.status === 403) {
-        alert('❌ 방장만 게임을 종료할 수 있습니다.');
-      } else {
-        alert('⚠️ 오류가 발생했습니다.');
-      }
+      alert(e.response?.status === 403 ? '❌ 방장만 종료 가능' : '⚠️ 오류가 발생했습니다.');
     }
   };
 
+  /* ───────────────────────── 렌더 ───────────────────────── */
   return (
     <div className="board-page-container">
       {loading ? (
@@ -186,7 +188,7 @@ const BoardPage: React.FC = () => {
           <div className="board-container">
             {tileOrder
               .map(idx => tileData.find(t => t.idx === idx))
-              .filter((tile): tile is TileInfo => !!tile)
+              .filter((t): t is TileInfo => !!t)
               .map(tile => {
                 const isDiagonal = tile.idx >= 24 && tile.idx <= 28;
                 return (
@@ -195,9 +197,8 @@ const BoardPage: React.FC = () => {
                     className={`tile tile-${tile.idx}`}
                     text={`${tile.defaultAction?.type === 'bomb' ? '💣 ' : ''}${tile.description}`}
                   >
-                    {!isDiagonal && players.filter(p => p.position === tile.idx).map(p => (
-                      <Piece key={p.id} />
-                    ))}
+                    {!isDiagonal &&
+                      players.filter(p => p.position === tile.idx).map(p => <Piece key={p.id} />)}
                   </Tile>
                 );
               })}
@@ -205,19 +206,21 @@ const BoardPage: React.FC = () => {
             <div className="center-tile-area">
               <div className="bomb-counter-box">
                 <span className="bomb-icon">💣</span>
-                <span className="bomb-count">현재 적립된 잔: <span style={{ color: 'red' }}>{bombCount}잔</span></span>
+                <span className="bomb-count">
+                  현재 적립된 잔: <span style={{ color: 'red' }}>{bombCount}잔</span>
+                </span>
               </div>
+
               <CenterTile />
               <div className="dice-container-wrapper">
-                <Dice3D number={diceValue} rolling={rolling} onRollEnd={() => { }} />
+                <Dice3D number={diceValue} rolling={rolling} onRollEnd={() => {}} />
               </div>
-              <div className='announce'>순서에 따라 휴대폰에서 주사위를 돌려주세요.</div>
+              <div className="announce">순서에 따라 휴대폰에서 주사위를 돌려주세요.</div>
+
               {[24, 25, 26, 27, 28].map((pos, i) => (
                 <div key={pos} className={`diagonal-tile diagonal-tile-${i}`}>
                   <div className="text">{i % 2 === 0 ? '술' : '물'}</div>
-                  {players.filter(p => p.position === pos).map(p => (
-                    <Piece key={p.id} />
-                  ))}
+                  {players.filter(p => p.position === pos).map(p => <Piece key={p.id} />)}
                 </div>
               ))}
             </div>
@@ -226,9 +229,9 @@ const BoardPage: React.FC = () => {
           {showDicePopup && (
             <Popup
               title={`🎲 주사위 결과: ${diceValue}칸 이동`}
-              description=''
+              description=""
               onClose={closeDicePopup}
-              variant='board'
+              variant="board"
             />
           )}
 
@@ -236,11 +239,9 @@ const BoardPage: React.FC = () => {
             <Popup
               title={activePopup.tile.description}
               description={
-                <>
-                  {activePopup.tile.defaultAction?.type === 'popup' && (
-                    <div>{activePopup.tile.defaultAction.message}</div>
-                  )}
-                </>
+                activePopup.tile.defaultAction?.type === 'popup'
+                  ? activePopup.tile.defaultAction.message
+                  : ''
               }
               onClose={handleClosePopup}
             />

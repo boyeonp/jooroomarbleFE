@@ -142,8 +142,10 @@ const WaitingRoomPage: React.FC = () => {
 
       <div className="content-wrapper">
         <div className="qr-box">
-          <span className="qr-code-text">{code}</span>
-          <QRCode value={joinLink} size={260} />
+          <div className="qr-code-text-line">
+            <span className="qr-label">참여코드 : {code}</span>
+          </div>
+          <QRCode value={joinLink} size={300} />
         </div>
         <div className="participant-list">
           <div className="participant-count">
