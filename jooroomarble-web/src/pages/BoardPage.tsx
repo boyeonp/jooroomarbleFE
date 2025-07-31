@@ -72,20 +72,43 @@ const BoardPage: React.FC = () => {
   };
 
   /* ───────────────────────── 말 애니메이션 ───────────────────────── */
-  const animatePieceMovement = (from: number, to: number, onEnd: () => void) => {
-    const step = from < to ? 1 : -1;
-    let current = from;
+  const animatePieceAlongPath = (path: number[], onEnd: () => void) => {
+    let index = 0;
     const interval = setInterval(() => {
-      current += step;
-      setPlayers([{ id: 1, position: current }]);
-      if (current === to) {
+      if (index >= path.length) {
         clearInterval(interval);
         onEnd();
+        return;
       }
-    }, 300);
+      setPlayers([{ id: 1, position: path[index] }]);
+      index++;
+    }, 350); // 애니메이션 속도 약간 빠르게 조정
   };
 
-  /* ───────────────────────── 최초 로드 ───────────────────────── */
+  /* ─────────────────── 이동 종료 후 로직 ─────────────────── */
+  const onMoveEnd = (finalTile: TileInfo) => {
+    if (!finalTile) return;
+    setTileData(prev => (prev.find(t => t.idx === finalTile.idx) ? prev : [...prev, finalTile]));
+    if (finalTile.defaultAction?.type === 'bomb') {
+      setBombCount(prev => {
+        const next = prev + 1;
+        bombCountRef.current = next;
+        return next;
+      });
+    }
+    if (finalTile.idx === 0) {
+      const currentCount = bombCountRef.current;
+      setActivePopup({
+        tile: { ...finalTile, description: 'START 적립 알림', defaultAction: { type: 'popup', message: `${currentCount}잔이 적립되어 있습니다!` } },
+      });
+      bombCountRef.current = 0;
+      setBombCount(0);
+    } else {
+      setTimeout(() => setActivePopup({ tile: finalTile }), 800);
+    }
+  };
+
+  /* ─────────────────── 최초 로드 & 소켓 리스너 ─────────────────── */
   useEffect(() => {
     const initialize = async () => {
       await fetchInitialTiles();
@@ -98,65 +121,61 @@ const BoardPage: React.FC = () => {
     if (!socket.connected) socket.connect();
     socket.emit('join_room', { code });
 
-    /* ───────── 서버 이벤트: 턴 변경 ───────── */
-    socket.on('turn_changed', (data: any) => {
+    const handleTurnChanged = (data: any) => {
       const { dice, fromPos, toPos, tile } = data;
       setRolling(true);
       setDiceValue(dice);
 
-      /* 주사위 3D 애니 끝나면 실행 */
       const handleRollEnd = () => {
         setRolling(false);
         setShowDicePopup(true);
-
         setTimeout(() => {
           setShowDicePopup(false);
 
-          /* 말 이동 애니메이션 */
-          animatePieceMovement(fromPos, toPos, () => {
-            /* 이동 끝 후 타일 처리 */
-            setTileData(prev => (prev.find(t => t.idx === tile.idx) ? prev : [...prev, tile]));
+          let path: number[] = [];
+          let current = fromPos;
 
-            /* 폭탄 칸 적립 */
-            if (tile.defaultAction?.type === 'bomb') {
-              setBombCount(prev => {
-                const next = prev + 1;
-                bombCountRef.current = next;           // ✨ 수정: ref 동기화
-                return next;
-              });
-            }
-
-            /* START 칸 체크 & 팝업 */
-            if (tile.idx === 0) {
-              const currentCount = bombCountRef.current;   // ✨ 수정: 항상 최신 값
-              setActivePopup({
-                tile: {
-                  ...tile,
-                  description: 'START 적립 알림',
-                  defaultAction: {
-                    type: 'popup',
-                    message: `${currentCount}잔이 적립되어 있습니다!`,
-                  },
-                },
-              });
-              bombCountRef.current = 0;                    // ✨ 수정: ref 리셋
-              setBombCount(0);                             // ✨ 수정: state 리셋
+          // 서버가 보내준 toPos와 주사위 값을 기반으로 경로를 재구성합니다.
+          // 이는 클라이언트에서 정확한 애니메이션을 보여주기 위함입니다.
+          
+          // 1. 주사위 값만큼 한 칸씩 이동하며 경로 생성
+          path.push(current);
+          for (let i = 0; i < dice; i++) {
+            // 15번 칸(포탈)에 도착하면 24번으로 점프
+            if (current === 15) {
+              current = 24;
             } else {
-              setTimeout(() => setActivePopup({ tile }), 800);
+              current = (current + 1);
+              // 메인 보드(0-23) 순환 처리
+              if (current > 23 && current < 29) {
+                 // 이전에 있던 칸이 대각선이 아니었다면, 0으로 보냄
+                 const prevPos = path[path.length -1];
+                 if(prevPos < 24) current = 0;
+              }
             }
-          });
+            path.push(current);
+          }
+
+          // 2. 최종 도착지가 특수 미끄럼틀 칸인지 확인하고 경로에 추가
+          const finalPos = path[path.length - 1];
+          if (finalPos === 23 && toPos === 0) {
+            path.push(0);
+          } else if (finalPos === 28 && toPos === 5) {
+            path.push(5);
+          }
+          
+          animatePieceAlongPath(path, () => onMoveEnd(tile));
+
         }, 800);
       };
-
-      /* Dice3D 가 1.5초 돌도록 맞춰줌 */
       setTimeout(handleRollEnd, 1500);
-    });
-
-    return () => {
-      socket.emit('leave_room', { code });
-      socket.disconnect();
     };
-  }, []);
+
+    socket.on('turn_changed', handleTurnChanged);
+    return () => {
+      socket.off('turn_changed', handleTurnChanged);
+    };
+  }, [code, tileData]);
 
   /* ───────────────────────── 기타 핸들러 ───────────────────────── */
   const closeDicePopup = () => setShowDicePopup(false);
